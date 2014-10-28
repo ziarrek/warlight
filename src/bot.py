@@ -172,7 +172,7 @@ class Bot(object):
             info = dict()
             info['world'] = world
             info['your_bot'] = your_bot
-            info['regions'] = regions
+            info['regions'] = map(int,regions)
             info['time'] = int(time) * (1.0 * (i+1)/n)
             return info
 
@@ -180,6 +180,8 @@ class Bot(object):
 
         # shuffled_regions = Random.shuffle(Random.shuffle(regions))
         # picked_regions = shuffled_regions[:6]
+
+        picked_regions = map(str, picked_regions)
         
         return ' '.join(picked_regions)
 
