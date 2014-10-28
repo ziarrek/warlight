@@ -176,7 +176,7 @@ class Bot(object):
             info['time'] = int(time) * (1.0 * (i+1)/n)
             return info
 
-        picked_regions = self.call_layers('pick_regions','picked_regions', info_fun)['picked_regions']
+        picked_regions = self.call_layers('pick_starting_regions','picked_regions', info_fun)['picked_regions']
 
         # shuffled_regions = Random.shuffle(Random.shuffle(regions))
         # picked_regions = shuffled_regions[:6]
