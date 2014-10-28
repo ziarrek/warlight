@@ -10,7 +10,7 @@ class TacticsLayer(BotLayer):
 	def pick_starting_regions(self, info, input):
 		pass
 
-	def place_troops(self, info, input):
+	def place_armies(self, info, input):
 		pass
 
 	def attack_transfer(self, info, input):

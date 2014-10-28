@@ -1,0 +1,106 @@
+{
+	"actions": [
+		{
+			"name": "place_armies",
+			"output": "placements"
+		},
+		{
+			"name": "pick_starting_regions",
+			"output": "picked_regions"
+		},
+		{
+			"name": "attack_transfer",
+			"output": "attack_transfers"
+		}
+	],
+	"layers": [
+		{
+			"name": "StrategyLayer",
+			"actions": {
+				"pick_starting_regions": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				},
+				"place_armies": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				},
+				"attack_transfer": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				}
+			}
+
+		},
+		{
+			"name": "TacticsLayer",
+			"actions": {
+				"pick_starting_regions": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				},
+				"place_armies": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				},
+				"attack_transfer": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				}
+			}
+		},
+		{
+			"name": "MicroLayer",
+			"actions": {
+				"pick_starting_regions": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				},
+				"place_armies": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				},
+				"attack_transfer": {
+					"input": {
+
+					},
+					"output": {
+
+					}
+				}
+			}
+		}
+	]
+}
