@@ -1,6 +1,7 @@
 from BotLayer import BotLayer
 
 from util import Map, Region, SuperRegion, Random
+from math import ceil
 
 class MicroLayer(BotLayer):
 
@@ -17,8 +18,22 @@ class MicroLayer(BotLayer):
 
 		starting_armies = info['starting_armies']
 
+		left_armies = starting_armies
+		placements = []
+
+		# distribute the armies by giving half of the remaining number
+		# to the next region, stop when ran out of armies
+		# with 7 armies available, 3 regions will be populated
+		for region in regions:
+			region_id = region[0]
+			place_n = int(round(left_armies*1.0/2))
+			placements.append((region_id,place_n))
+			left_armies -= place_n
+			if not left_armies:
+				break
+
 		return {
-			'placements': []
+			'placements': placements
 		}
 
 	def attack_transfer(self, info, input):
