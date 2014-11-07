@@ -5,25 +5,26 @@ from util import Map, Region, SuperRegion, Random
 class MicroLayer(BotLayer):
 
 	def __init__(self):
-		pass
+		# a list of important regions from the higher layer
+		self.regions = []
 
 	def pick_starting_regions(self, info, input):
 		pass
 
 	def place_armies(self, info, input):
-		pass
+		regions = self.regions = input['regions']
+		world = info['world']
+
+		starting_armies = info['starting_armies']
+
+		return {
+			'placements': []
+		}
 
 	def attack_transfer(self, info, input):
-		troop_numbers = []
-		if info.has_key('you_decide') and not info['you_decide'] and info.has_key('troops'):
-			troop_numbers = info['troops']
-		else:
-			troop_numbers = [10, 20, 12]
-		
+		regions = self.regions
+		world = info['world']
+
 		return {
-			'attack_transfers': [
-				(1,2,troop_numbers[0]),
-				(4,5,troop_numbers[1]),
-				(7,3,troop_numbers[2])
-			]
+			'attack_transfers': []
 		}
