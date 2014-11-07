@@ -1,16 +1,33 @@
 {
 	"actions": [
 		{
-			"name": "place_armies",
-			"output": "placements"
+			"name": "pick_starting_regions",
+			"expected_output": "picked_regions",
+			"info": {
+				"world": "Map",
+				"your_bot": "string",
+				"regions": "list<string>",
+				"time": "int"
+			}
 		},
 		{
-			"name": "pick_starting_regions",
-			"output": "picked_regions"
+			"name": "place_armies",
+			"expected_output": "placements",
+			"info": {
+				"world": "Map",
+				"your_bot": "string",
+				"starting_armies": "int",
+				"time": "int"
+			}
 		},
 		{
 			"name": "attack_transfer",
-			"output": "attack_transfers"
+			"expected_output": "attack_transfers",
+			"info": {
+				"world": "Map",
+				"your_bot": "string",
+				"time": "int"
+			}
 		}
 	],
 	"layers": [
@@ -18,86 +35,57 @@
 			"name": "StrategyLayer",
 			"actions": {
 				"pick_starting_regions": {
-					"input": {
-
-					},
+					"input": {},
 					"output": {
-
+						"picked_regions": "list<region_id: string>"
 					}
 				},
+				
 				"place_armies": {
-					"input": {
-
-					},
+					"input": {},
 					"output": {
-
+						"continents": "list<(superregion_id:string, priority:int)>"
 					}
 				},
-				"attack_transfer": {
-					"input": {
 
-					},
-					"output": {
-
-					}
-				}
+				"attack_transfer": null
 			}
-
 		},
 		{
 			"name": "TacticsLayer",
 			"actions": {
-				"pick_starting_regions": {
-					"input": {
+				"pick_starting_regions": null,
 
-					},
-					"output": {
-
-					}
-				},
 				"place_armies": {
 					"input": {
-
+						"continents": "list<(superregion_id:string, priority:int)>"
 					},
 					"output": {
-
+						"regions": "list<(region_id:string, priority: int, action: string)>"
 					}
 				},
-				"attack_transfer": {
-					"input": {
 
-					},
-					"output": {
-
-					}
-				}
+				"attack_transfer": null
 			}
 		},
 		{
 			"name": "MicroLayer",
 			"actions": {
-				"pick_starting_regions": {
-					"input": {
+				"pick_starting_regions": null,
 
-					},
-					"output": {
-
-					}
-				},
 				"place_armies": {
 					"input": {
-
+						"regions": "list<(region_id:string, priority: int, action: string)>"
 					},
 					"output": {
-
+						"placements": "list<(region_id: string, troops: int)>"
 					}
 				},
+
 				"attack_transfer": {
-					"input": {
-
-					},
+					"input": {},
 					"output": {
-
+						"attack_transfers": "list<(start_region_id: string, target_region_id: string, troops: int)>"
 					}
 				}
 			}
