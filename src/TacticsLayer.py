@@ -48,7 +48,7 @@ class TacticsLayer(BotLayer):
 
   def adjacent(self, region):
     for neighbour in region.neighbours:
-      if neighbour.owner = 'your_bot':
+      if neighbour.owner == 'your_bot':
         return True
     return False
 
