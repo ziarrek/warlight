@@ -6,7 +6,7 @@
 #                                                                     #
 # @author Jackie <jackie@starapple.nl>                                #
 # @version 1.0                                                        #
-# @license MIT License (http://opensource.org/licenses/MIT)           # 
+# @license MIT License (http://opensource.org/licenses/MIT)           #
 #---------------------------------------------------------------------#
 
 from StrategyLayer import StrategyLayer
@@ -37,7 +37,7 @@ class Bot(object):
     def run(self):
         '''
         Main loop
-        
+
         Keeps running while being fed data from stdin.
         Writes output to stdout, remember to flush!
         '''
@@ -96,7 +96,7 @@ class Bot(object):
                     stderr.flush()
             except EOFError:
                 return
-    
+
     def update_settings(self, options):
         '''
         Method to update game settings at the start of a new game.
@@ -121,7 +121,7 @@ class Bot(object):
 
                 super_region = self.map.get_super_region_by_id(options[i + 1])
                 region = Region(options[i], super_region)
-                
+
                 self.map.regions.append(region)
                 super_region.regions.append(region)
 
@@ -135,7 +135,7 @@ class Bot(object):
                     neighbour.neighbours.append(region)
 
         if map_type == 'neighbors':
-            
+
             for region in self.map.regions:
 
                 if region.is_on_super_region_border:
@@ -152,16 +152,19 @@ class Bot(object):
         '''
         Method to update our map every round.
         '''
+        for region in self.map.regions:
+            region.is_fog = True
+
         for i in range(0, len(options), 3):
-            
             region = self.map.get_region_by_id(options[i])
             region.owner = options[i + 1]
             region.troop_count = int(options[i + 2])
-            
+            region.is_fog = False
+
     def pick_starting_regions(self, time, regions):
         '''
         Method to select our initial starting regions.
-        
+
         '''
 
         info = dict()
@@ -192,7 +195,7 @@ class Bot(object):
         info['time'] = int(time) * 1.0 /self.n
 
         result = self.call_layers('place_armies', 'placements', info)
-        
+
         if result.has_key('placements'):
             placements = result['placements']
             return ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
