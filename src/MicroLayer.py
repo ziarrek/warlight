@@ -14,6 +14,7 @@ class MicroLayer(BotLayer):
 		self.regions = []
 		self.player = ''
 		self.opponent = ''
+		self.intended_moves = []
 
 	def pick_starting_regions(self, info, input):
 		pass
@@ -28,6 +29,7 @@ class MicroLayer(BotLayer):
 		starting_armies = info['starting_armies']
 		left_armies = starting_armies
 
+		self.intended_moves = []
 		placements = []
 
 		# distribute the armies by giving half of the remaining number
@@ -36,12 +38,24 @@ class MicroLayer(BotLayer):
 		for region in regions:
 			region_id = region[0]
 			region_action = region[2]
+			region_obj = world.get_region_by_id(region_id)
+			placement_region_id =''
+			if region_action == 'attack':
+				candidates = []
+				for neighbour in region_obj.neighbours:
+					if not neighbour.is_fog and neighbour.owner == player:
+						candidates.append(neighbour)
+				placement_region = max(candidates,key=lambda x:x.troop_count)
+				placement_region_id = placement_region.id
+				# TODO add intended_move handling
+			elif region_action == 'defend':
+				placement_region_id = region_id
 
-			# TODO
-			placement_region = ''
-			place_n = int(round(left_armies*1.0/2))
-			placements.append((region_id,place_n))
-			left_armies -= place_n
+			if placement_region_id == '':
+				continue
+			placement_troops_count = int(round(left_armies*1.0/2))
+			placements.append((placement_region_id,placement_troops_count))
+			left_armies -= placement_troops_count
 			if not left_armies:
 				break
 
@@ -53,14 +67,24 @@ class MicroLayer(BotLayer):
 		regions = self.regions
 		world = info['world']
 
+		attack_transfers = []
 		for region in regions:
 			region_id = region[0]
 			region_action = region[2]
 			region_obj = world.get_region_by_id(region_id)
 
-
-
+			if region_action == 'attack':
+				# TODO add intended_moves use
+				candidates = []
+				for neighbour in region_obj.neighbours:
+					if not neighbour.is_fog and neighbour.owner == player:
+						candidates.append(neighbour)
+				move_region = max(candidates,key=lambda x:x.troop_count)
+				move_region_id = move_region.id
+				move_troops_count = move_region.troops_count - 1
+				if move_troops_count:
+					attack_transfers.append((move_region_id, region_id, move_troops_count))
 
 		return {
-			'attack_transfers': []
+			'attack_transfers': attack_transfers
 		}
