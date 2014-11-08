@@ -114,21 +114,30 @@ class Bot(object):
 
             if map_type == 'super_regions':
 
-                super_region = SuperRegion(options[i], int(options[i + 1]))
+                super_region_id = options[i]
+                super_region_worth = int(options[i + 1])
+
+                super_region = SuperRegion(super_region_id, super_region_worth)
                 self.map.super_regions.append(super_region)
 
             elif map_type == 'regions':
 
-                super_region = self.map.get_super_region_by_id(options[i + 1])
-                region = Region(options[i], super_region)
+                region_id = options[i]
+                super_region_id = options[i + 1]
+
+                super_region = self.map.get_super_region_by_id(super_region_id)
+                region = Region(region_id, super_region)
 
                 self.map.regions.append(region)
                 super_region.regions.append(region)
 
             elif map_type == 'neighbors':
 
-                region = self.map.get_region_by_id(options[i])
-                neighbours = [self.map.get_region_by_id(region_id) for region_id in options[i + 1].split(',')]
+                region_id = options[i]
+                neighbour_list = options[i+1]
+
+                region = self.map.get_region_by_id(region_id)
+                neighbours = [self.map.get_region_by_id(region_id) for region_id in neighbour_list.split(',')]
 
                 for neighbour in neighbours:
                     region.neighbours.append(neighbour)
@@ -156,9 +165,13 @@ class Bot(object):
             region.is_fog = True
 
         for i in range(0, len(options), 3):
-            region = self.map.get_region_by_id(options[i])
-            region.owner = options[i + 1]
-            region.troop_count = int(options[i + 2])
+            region_id = options[i]
+            region_owner_id = options[i + 1]
+            region_troop_count = int(options[i + 2])
+
+            region = self.map.get_region_by_id(region_id)
+            region.owner = region_owner_id
+            region.troop_count = region_troop_count
             region.is_fog = False
 
     def pick_starting_regions(self, time, regions):

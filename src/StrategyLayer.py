@@ -64,7 +64,7 @@ class StrategyLayer(BotLayer):
 
 
         total_regions = owned_regions + enemy_regions + neutral_regions
-        total_neighbour_regoins = neighbour_enemy_regions + neighbour_owned_regions + neighbour_neutral_regions
+        total_neighbour_regions = neighbour_enemy_regions + neighbour_owned_regions + neighbour_neutral_regions
         total_troops = owned_troops + enemy_troops
 
         if total_troops != 0:
