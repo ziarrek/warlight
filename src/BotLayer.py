@@ -6,7 +6,7 @@ class BotLayer:
 	def pick_starting_regions(self, info, input):
 		raise NotImplementedError('this is an abstract class')
 
-	def place_troops(self, info, input):
+	def place_armies(self, info, input):
 		raise NotImplementedError('this is an abstract class')
 
 	def attack_transfer(self, info, input):

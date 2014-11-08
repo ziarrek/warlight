@@ -10,29 +10,29 @@ class TacticsLayer(BotLayer):
   def pick_starting_regions(self, info, input):
     pass
 
-  def place_troops(self, info, input):
+  def place_armies(self, info, input):
 
     continents = input['continents']
-    
+
 
     map = info['world']
 
     inp = []
-    
+
     # iterate through continents in the list
     for continent_tuple in continents:
-      
+
       continent_id = continent_tuple[0]
       continent    = map.get_super_region_by_id(continent_id)
-      
+
       for region in continent.regions:
         if region.is_fog:
           continue
-        
+
         # ATTACK: check ADJACENT regions not owned in given continent
         if region.owner == 'neutral':
           inp.append( (region.id, 5, 'attack') )
-      
+
         elif region.owner == 'opponent':
           inp.append( (region.id, 10, 'attack') )
 
@@ -40,10 +40,10 @@ class TacticsLayer(BotLayer):
           # DEFEND: check border regions
           if border(region):
               inp.append( (region, 3, 'defend') )
-    
+
       return {'regions' : inp}
 
-  
+
   def attack_transfer(self, info, input):
     pass
 

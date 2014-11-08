@@ -10,8 +10,8 @@ class StrategyLayer(BotLayer):
     def pick_starting_regions(self, info, input):
         # output contains 'placements', will skip all further layers
         return {'picked_regions': ['19 ', '20', '18', '16', '15', '14', '13', '10', '11', '12', '13', '9' ]}
-    
-    def place_troops(self, info, input):
+
+    def place_armies(self, info, input):
         pass
 
     def attack_transfer(self, info, input):
@@ -51,7 +51,7 @@ class StrategyLayer(BotLayer):
               for found_neighbour in super_region_neigbours:
                 if neighbour.id == found_neighbour.id:
                   neighbour_found = True
-            
+
             if not neighbour_found:
               super_region_neigbours.append(neighbour)
 
@@ -79,5 +79,7 @@ class StrategyLayer(BotLayer):
           super_region_value = 0
 
         super_regions.append({id : super_region_value})
-        
-      return super_regions
+
+      return {
+        'continents': super_regions
+      }
