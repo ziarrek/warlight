@@ -26,7 +26,7 @@ class TacticsLayer(BotLayer):
       continent    = map.get_super_region_by_id(continent_id)
       
       for region in continent.regions:
-        if region.owner == 'fog':
+        if region.is_fog:
           continue
         
         # ATTACK: check ADJACENT regions not owned in given continent
