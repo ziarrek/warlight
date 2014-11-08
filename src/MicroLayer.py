@@ -1,29 +1,90 @@
 from BotLayer import BotLayer
 
 from util import Map, Region, SuperRegion, Random
+from math import ceil
+
+# get other players name, assumes two constant name: player1, player2
+def get_other_player(player_name):
+	return 'player1' if player_name == 'player1' else 'player2'
 
 class MicroLayer(BotLayer):
 
 	def __init__(self):
-		pass
+		# a list of important regions from the higher layer
+		self.regions = []
+		self.player = ''
+		self.opponent = ''
+		self.intended_moves = []
 
 	def pick_starting_regions(self, info, input):
 		pass
 
 	def place_armies(self, info, input):
-		pass
+		regions = self.regions = sorted(input['regions'], key=lambda x:x[1],reversed=True)
+
+		world = info['world']
+		self.player = player = info['your_bot']
+		self.opponent = opponent = get_other_player(player)
+
+		starting_armies = info['starting_armies']
+		left_armies = starting_armies
+
+		self.intended_moves = []
+		placements = []
+
+		# distribute the armies by giving half of the remaining number
+		# to the next region, stop when ran out of armies
+		# with 7 armies available, 3 regions will be populated
+		for region in regions:
+			region_id = region[0]
+			region_action = region[2]
+			region_obj = world.get_region_by_id(region_id)
+			placement_region_id =''
+			if region_action == 'attack':
+				candidates = []
+				for neighbour in region_obj.neighbours:
+					if not neighbour.is_fog and neighbour.owner == player:
+						candidates.append(neighbour)
+				placement_region = max(candidates,key=lambda x:x.troop_count)
+				placement_region_id = placement_region.id
+				# TODO add intended_move handling
+			elif region_action == 'defend':
+				placement_region_id = region_id
+
+			if placement_region_id == '':
+				continue
+			placement_troops_count = int(round(left_armies*1.0/2))
+			placements.append((placement_region_id,placement_troops_count))
+			left_armies -= placement_troops_count
+			if not left_armies:
+				break
+
+		return {
+			'placements': placements
+		}
 
 	def attack_transfer(self, info, input):
-		troop_numbers = []
-		if info.has_key('you_decide') and not info['you_decide'] and info.has_key('troops'):
-			troop_numbers = info['troops']
-		else:
-			troop_numbers = [10, 20, 12]
-		
+		regions = self.regions
+		world = info['world']
+
+		attack_transfers = []
+		for region in regions:
+			region_id = region[0]
+			region_action = region[2]
+			region_obj = world.get_region_by_id(region_id)
+
+			if region_action == 'attack':
+				# TODO add intended_moves use
+				candidates = []
+				for neighbour in region_obj.neighbours:
+					if not neighbour.is_fog and neighbour.owner == player:
+						candidates.append(neighbour)
+				move_region = max(candidates,key=lambda x:x.troop_count)
+				move_region_id = move_region.id
+				move_troops_count = move_region.troops_count - 1
+				if move_troops_count:
+					attack_transfers.append((move_region_id, region_id, move_troops_count))
+
 		return {
-			'attack_transfers': [
-				(1,2,troop_numbers[0]),
-				(4,5,troop_numbers[1]),
-				(7,3,troop_numbers[2])
-			]
+			'attack_transfers': attack_transfers
 		}
