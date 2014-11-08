@@ -12,7 +12,7 @@ class StrategyLayer(BotLayer):
         return {'picked_regions': ['19 ', '20', '18', '16', '15', '14', '13', '10', '11', '12', '13', '9' ]}
 
     def place_armies(self, info, input):
-        world = info['world']
+      world = info['world']
       your_bot = info['your_bot']
       super_regions = []
       for id in range(1, 6):

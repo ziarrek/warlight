@@ -1,2 +1,9 @@
 #!/bin/bash
-zip -rj bot.zip src/bot.py src/util.py src/BotLayer.py src/StrategyLayer.py src/TacticsLayer.py src/MicroLayer.py
+cd src
+python -m py_compile bot.py util.py BotLayer.py StrategyLayer.py TacticsLayer.py MicroLayer.py
+if [[ $? != 0 ]]; then
+	echo -e "\nPython compilation failed, aborting packaging process"
+	exit 1
+fi
+zip -rj bot.zip bot.py util.py BotLayer.py StrategyLayer.py TacticsLayer.py MicroLayer.py
+mv ./bot.zip ../bot.zip	
