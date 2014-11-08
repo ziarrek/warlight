@@ -40,6 +40,12 @@ class MicroLayer(BotLayer):
 		regions = self.regions
 		world = info['world']
 
+		for region in regions:
+			region_id = region[0]
+			region_action = region[1]
+
+			region_obj = world.get_region_by_id(region_id)
+
 		return {
 			'attack_transfers': []
 		}
