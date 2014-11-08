@@ -1,0 +1,2 @@
+#!/bin/bash
+zip -rj bot.zip src/bot.py src/util.py src/BotLayer.py src/StrategyLayer.py src/TacticsLayer.py src/MicroLayer.py
