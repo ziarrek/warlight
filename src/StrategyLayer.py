@@ -9,9 +9,9 @@ class StrategyLayer(BotLayer):
 
 	def pick_starting_regions(self, info, input):
 		# output contains 'placements', will skip all further layers
-		return {'placements': [10, 1, 30, 12, 43, 23]}
+		return {'picked_regions': ['10', '1', '30', '12', '43', '23']}
 
-	def place_troops(self, info, input):
+	def place_armies(self, info, input):
 		pass
 
 	def attack_transfer(self, info, input):

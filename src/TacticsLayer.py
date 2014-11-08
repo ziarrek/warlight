@@ -44,4 +44,3 @@ class TacticsLayer(BotLayer):
       }
     else:
       return {'you_decide': True}
-

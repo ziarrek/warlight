@@ -18,6 +18,7 @@ from util import Map, Region, SuperRegion
 from math import fmod, pi
 from sys import stderr, stdin, stdout
 from time import clock
+from json import loads
 
 
 class Bot(object):
@@ -30,7 +31,8 @@ class Bot(object):
         '''
         self.settings = {}
         self.map = Map()
-        self.layers = list(layers)
+        self.layers = layers
+        self.n = len(layers)
 
     def run(self):
         '''
@@ -160,132 +162,70 @@ class Bot(object):
         '''
         Method to select our initial starting regions.
         
-        Currently selects six random regions.
         '''
 
-        world = self.map
-        your_bot = self.settings['your_bot']
+        info = dict()
+        info['world'] = self.map
+        info['your_bot'] = self.settings['your_bot']
+        info['regions'] = map(int,regions)
+        info['time'] = int(time) * 1.0 / self.n
 
-        picked_regions = []
+        result = self.call_layers('pick_starting_regions','picked_regions', info)
 
-        def info_fun(i, n):
-            info = dict()
-            info['world'] = world
-            info['your_bot'] = your_bot
-            info['regions'] = regions
-            info['time'] = int(time) * (1.0 * (i+1)/n)
-            return info
-
-        picked_regions = self.call_layers('pick_regions','picked_regions', info_fun)['picked_regions']
-
-        # shuffled_regions = Random.shuffle(Random.shuffle(regions))
-        # picked_regions = shuffled_regions[:6]
-        
-        return ' '.join(picked_regions)
+        if result.has_key('picked_regions'):
+            picked_regions = result['picked_regions']
+            picked_regions = map(str, picked_regions)
+            return ' '.join(picked_regions)
+        else:
+            return ''
 
     def place_armies(self, time):
         '''
         Method to place our troops.
-        
-        Currently keeps places a maximum of two troops on random regions.
+
         '''
-        world = self.map
-        starting_armies = int(self.settings['starting_armies'])
-        your_bot = self.settings['your_bot']
 
-        placements = []
+        info = dict()
+        info['world'] = self.map
+        info['your_bot'] = self.settings['your_bot']
+        info['starting_armies'] = int(self.settings['starting_armies'])
+        info['time'] = int(time) * 1.0 /self.n
 
-        def info_fun(i, n):
-            info = dict()
-            info['world'] = world
-            info['your_bot'] = your_bot
-            info['starting_armies'] = starting_armies
-            info['time'] = int(time) * (1.0 * (i+1)/n)
-            return info
-
-        placements = self.call_layers('place_armies', 'placements', info_fun)['placements']
-
-
-        # region_index = 0
-        # troops_remaining = starting_armies
+        result = self.call_layers('place_armies', 'placements', info)
         
-        # owned_regions = self.map.get_owned_regions(your_bot)
-        # duplicated_regions = owned_regions * (3 + int(troops_remaining / 2))
-        # shuffled_regions = Random.shuffle(duplicated_regions)
-        
-        # while troops_remaining:
-
-        #     region = shuffled_regions[region_index]
-            
-        #     if troops_remaining > 1:
-
-        #         placements.append([region.id, 2])
-
-        #         region.troop_count += 2
-        #         troops_remaining -= 2
-                
-        #     else:
-
-        #          placements.append([region.id, 1])
-
-        #          region.troop_count += 1
-        #          troops_remaining -= 1
-
-        #     region_index += 1
-            
-        return ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
+        if result.has_key('placements'):
+            placements = result['placements']
+            return ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
             placement[1]) for placement in placements])
+        else:
+            return ''
 
     def attack_transfer(self, time):
         '''
         Method to attack another region or transfer troops to allied regions.
-        
-        Currently checks whether a region has more than six troops placed to attack,
-        or transfers if more than 1 unit is available.
+
         '''
 
-        world = self.map
-        your_bot = self.settings['your_bot']
+        info = dict()
+        info['world'] = self.map
+        info['your_bot'] = self.settings['your_bot']
+        info['time'] = int(time) * 1.0 / self.n
 
-        attack_transfers = []
+        result = self.call_layers('attack_transfer', 'attack_transfers', info)
 
-        def info_fun(i, n):
-            info = dict()
-            info['world'] = world
-            info['your_bot'] = your_bot
-            info['time'] = int(time) * (1.0 * (i+1)/n)
-            return info
-
-        attack_transfers = self.call_layers('attack_transfer', 'attack_transfers', info_fun)['attack_transfers']
-        
-        # owned_regions = self.map.get_owned_regions(your_bot)
-        
-        # for region in owned_regions:
-        #     neighbours = list(region.neighbours)
-        #     while len(neighbours) > 0:
-        #         target_region = neighbours[Random.randrange(0, len(neighbours))]
-        #         if region.owner != target_region.owner and region.troop_count > 6:
-        #             attack_transfers.append([region.id, target_region.id, 5])
-        #             region.troop_count -= 5
-        #         elif region.owner == target_region.owner and region.troop_count > 1:
-        #             attack_transfers.append([region.id, target_region.id, region.troop_count - 1])
-        #             region.troop_count = 1
-        #         else:
-        #             neighbours.remove(target_region)
-        
-        # if len(attack_transfers) == 0:
-        #     return 'No moves'
-        
-        return ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
+        if result.has_key('attack_transfers'):
+            attack_transfers = result['attack_transfers']
+            return ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
             attack_transfer[1], attack_transfer[2]) for attack_transfer in attack_transfers])
+        else:
+            return ''
 
-    def call_layers(self, method_name, required_output, info_fun):
+    def call_layers(self, action_name, required_output, info):
         inp_command_dict = dict()
         out_command_dict = dict()
         n = len(self.layers)
         for i, layer in enumerate(self.layers):
-            method = getattr(layer, method_name)
-            info = info_fun(i, n)
+            method = getattr(layer, action_name)
             out_command_dict = method(info, inp_command_dict) or {}
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
