@@ -14,7 +14,7 @@ class Map(object):
         Returns a region instance by id.
         '''
         return [region for region in self.regions if region.id == region_id][0]
-    
+
     def get_super_region_by_id(self, super_region_id):
         '''
         Returns a super region instance by id.
@@ -33,7 +33,7 @@ class SuperRegion(object):
     '''
     def __init__(self, super_region_id, worth):
         '''
-        Initializes with an id, the super region's worth and an empty lists for 
+        Initializes with an id, the super region's worth and an empty lists for
         regions located inside this super region
         '''
         self.id = super_region_id
@@ -53,6 +53,7 @@ class Region(object):
         self.troop_count = 2
         self.super_region = super_region
         self.is_on_super_region_border = False
+        self.is_fog = True
 
 class Random(object):
     '''
@@ -62,7 +63,7 @@ class Random(object):
     def randrange(min, max):
         '''
         A pseudo random number generator to replace random.randrange
-        
+
         Works with an inclusive left bound and exclusive right bound.
         E.g. Random.randrange(0, 5) in [0, 1, 2, 3, 4] is always true
         '''
