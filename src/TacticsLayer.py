@@ -42,14 +42,7 @@ class TacticsLayer(BotLayer):
 
   
   def attack_transfer(self, info, input):
-    if info.has_key('cmd_for_lower_layer'):
-      return {
-	'you_decide': False,
-	'troops': [3,4,5]
-      }
-    else:
-      return {'you_decide': True}
-
+    pass
 
   #############################################################
 
