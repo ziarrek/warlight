@@ -26,8 +26,11 @@ class TacticsLayer(BotLayer):
       continent    = map.get_super_region_by_id(continent_id)
       
       for region in continent.regions:
+        if region.owner == 'fog':
+          continue
+        
         # ATTACK: check ADJACENT regions not owned in given continent
-        if region.owner == 'neutral' and adjacent(region):
+        if region.owner == 'neutral':
           inp.append( (region.id, 5, 'attack') )
       
         elif region.owner == 'opponent':
@@ -45,12 +48,6 @@ class TacticsLayer(BotLayer):
     pass
 
   #############################################################
-
-  def adjacent(self, region):
-    for neighbour in region.neighbours:
-      if neighbour.owner == 'your_bot':
-        return True
-    return False
 
   def border(self, region):
     if not region.is_on_super_region_border:
