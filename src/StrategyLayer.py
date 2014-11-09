@@ -8,16 +8,17 @@ class StrategyLayer(BotLayer):
         pass
 
     def pick_starting_regions(self, info, input):
+      regions = info['regions']
+      world = info['world']
+
       chosen_regions = []
-      for region in info.regions:
-        if info.Map.get_region_by_id(region).super_region == 3:
-          chosen_regions.append(region)
-      for region in info.regions:
-        if info.Map.get_region_by_id(region).super_region == 4:
-          chosen_regions.append(region)
-      for region in info.regions:
-        if info.Map.get_region_by_id(region).super_region == 2:
-          chosen_regions.append(region)
+      for region_id in regions:
+        if world.get_region_by_id(region_id).super_region.id == '3':
+          chosen_regions.append(region_id)
+        if world.get_region_by_id(region_id).super_region.id == '4':
+          chosen_regions.append(region_id)
+        if world.get_region_by_id(region_id).super_region.id == '2':
+          chosen_regions.append(region_id)
 
         # output contains 'placements', will skip all further layers
         return {'picked_regions': chosen_regions}
