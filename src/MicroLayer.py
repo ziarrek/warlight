@@ -22,7 +22,8 @@ class MicroLayer(BotLayer):
 		regions = self.regions = sorted(input['regions'], key=lambda x:x[1],reverse=True)
 
 		world = info['world']
-		self.player = player = info['your_bot']
+		your_bot = info['your_bot']
+		self.player = player = your_bot
 		self.opponent = opponent = get_other_player(player)
 
 		starting_armies = info['starting_armies']
@@ -31,7 +32,8 @@ class MicroLayer(BotLayer):
 		self.intended_moves = []
 		placements = []
 		stderr.write('your_bot: '+your_bot)
-		stderr.write('\n\nour regions:'+ ''.join([reg.id for reg in world.regions if reg.owner == player]))
+		stderr.write('\n\nour regions:'+ ' '.join([reg.id for reg in world.regions if reg.owner == player])+'\n')
+		stderr.write('regions to attack/defend: '+ ' '.join([reg[0] for reg in regions]))
 		# distribute the armies by giving half of the remaining number
 		# to the next region, stop when ran out of armies
 		# with 7 armies available, 3 regions will be populated
@@ -41,11 +43,13 @@ class MicroLayer(BotLayer):
 			region_obj = world.get_region_by_id(region_id)
 			placement_region_id =''
 			stderr.write('checked region: '+region_id+'\n')
+			stderr.write('region owner: '+ region_obj.owner+'\n')
+			stderr.write('region action: '+region_action+'\n\n')
 			if region_action == 'attack':
 				candidates = []
 				for neighbour in region_obj.neighbours:
 					stderr.write('neighbour id: '+neighbour.id+'\n')
-					stderr.write('is_fog: '+neighbour.is_fog+" "+'owner: '+neighbour.owner+'\n')
+					stderr.write('is_fog: '+str(neighbour.is_fog)+'\nowner: '+neighbour.owner+'\n\n')
 					if not neighbour.is_fog and neighbour.owner == player:
 						candidates.append(neighbour)
 				if candidates:
@@ -70,6 +74,7 @@ class MicroLayer(BotLayer):
 	def attack_transfer(self, info, input):
 		regions = self.regions
 		world = info['world']
+
 
 		attack_transfers = []
 		for region in regions:

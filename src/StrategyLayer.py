@@ -24,7 +24,8 @@ class StrategyLayer(BotLayer):
           chosen_regions.append(region_id)
 
         # output contains 'placements', will skip all further layers
-        return {'picked_regions': chosen_regions}
+      stderr.write(' '.join(chosen_regions))
+      return {'picked_regions': chosen_regions}
 
     def place_armies(self, info, input):
       world = info['world']
@@ -56,7 +57,7 @@ class StrategyLayer(BotLayer):
             enemy_regions += 1
 
           #if region.is_on_super_region_border
-          
+
           neighbour_found = False
           for neighbour in region.neighbours:
             if neighbour.super_region != super_region:
@@ -66,7 +67,7 @@ class StrategyLayer(BotLayer):
 
             if not neighbour_found:
               super_region_neigbours.append(neighbour)
-        
+
         for neighbour in super_region_neigbours:
           if region.owner == 'neutral':
             neighbour_neutral_regions += 1
