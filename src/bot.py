@@ -70,6 +70,7 @@ class Bot(object):
                     self.update_map(parts[1:])
 
                 elif command == 'pick_starting_regions':
+                    stderr.write('regions: '+' '.join(parts[2:]))
                     stdout.write(self.pick_starting_regions(parts[1], parts[2:]) + '\n')
                     stdout.flush()
 
