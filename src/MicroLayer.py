@@ -40,11 +40,11 @@ class MicroLayer(BotLayer):
 		for region in regions:
 			region_id = region[0]
 			region_action = region[2]
-			region_obj = world.get_region_by_id(region_id)
-			placement_region_id =''
-			# stderr.write('checked region: '+region_id+'\n')
+			stderr.write('checked region: '+region_id+'\n')
 			# stderr.write('region owner: '+ region_obj.owner+'\n')
 			# stderr.write('region action: '+region_action+'\n\n')
+			region_obj = world.get_region_by_id(region_id)
+			placement_region_id =''
 			if region_action == 'attack':
 				candidates = []
 				for neighbour in region_obj.neighbours:

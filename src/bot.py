@@ -16,7 +16,7 @@ from MicroLayer import MicroLayer
 from util import Map, Region, SuperRegion
 
 from math import fmod, pi
-from sys import stderr, stdin, stdout
+from sys import stderr, stdin, stdout, exc_info
 from time import clock
 from json import loads
 import pprint
@@ -200,6 +200,8 @@ class Bot(object):
 
         if result.has_key('picked_regions'):
             picked_regions = result['picked_regions']
+            if not picked_regions:
+                return 'No moves'
             output = ' '.join(picked_regions)
             # stderr.write('picked_regions: '+output+'\n')
             return output
@@ -224,6 +226,8 @@ class Bot(object):
 
         if result.has_key('placements'):
             placements = result['placements']
+            if not placements:
+                return 'No moves'
             output = ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
             placement[1]) for placement in placements])
             # stderr.write('placements: '+ output+'\n')
@@ -248,6 +252,8 @@ class Bot(object):
 
         if result.has_key('attack_transfers'):
             attack_transfers = result['attack_transfers']
+            if not attack_transfers:
+                return 'No moves'
             output = ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
             attack_transfer[1], attack_transfer[2]) for attack_transfer in attack_transfers])
             # stderr.write('attack_transfers: '+output+'\n')
@@ -261,7 +267,12 @@ class Bot(object):
         n = len(self.layers)
         for i, layer in enumerate(self.layers):
             method = getattr(layer, action_name)
-            out_command_dict = method(info, inp_command_dict) or {}
+            try:
+                out_command_dict = method(info, inp_command_dict) or {}
+            except:
+                stderr.write("Unexpected error:", exc_info()[0])
+                return []
+
             # stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
