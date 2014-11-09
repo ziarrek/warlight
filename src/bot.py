@@ -252,6 +252,7 @@ class Bot(object):
 
         if result.has_key('attack_transfers'):
             attack_transfers = result['attack_transfers']
+            # stderr.write('attack transfer: ' + ' '.join(attack_transfers))
             if not attack_transfers:
                 return 'No moves'
             output = ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
@@ -270,7 +271,7 @@ class Bot(object):
             try:
                 out_command_dict = method(info, inp_command_dict) or {}
             except:
-                stderr.write("Unexpected error:", exc_info()[0])
+                stderr.write("Unexpected error:" + str(exc_info()[0]))
                 return []
 
             # stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
