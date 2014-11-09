@@ -169,7 +169,7 @@ class Bot(object):
         '''
         Method to update our map every round.
         '''
-        stderr.write('Round '+str(self.round_number)+'\n\n')
+        # stderr.write('Round '+str(self.round_number)+'\n\n')
         for region in self.map.regions:
             region.is_fog = True
 
@@ -262,11 +262,11 @@ class Bot(object):
         for i, layer in enumerate(self.layers):
             method = getattr(layer, action_name)
             out_command_dict = method(info, inp_command_dict) or {}
-            stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
+            # stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
                 inp_command_dict = out_command_dict
-                pp.pprint(out_command_dict)
+                # pp.pprint(out_command_dict)
             else:
                 # else do nothing, the input layer continues to the next layer
                 pass
