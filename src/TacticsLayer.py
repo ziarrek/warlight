@@ -40,7 +40,7 @@ class TacticsLayer(BotLayer):
 
         else:
           # DEFEND: check border regions
-          if border(region):
+          if self.border(region):
               inp.append( (region, 3, 'defend') )
 
       return {'regions' : inp}
