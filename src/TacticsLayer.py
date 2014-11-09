@@ -45,7 +45,7 @@ class TacticsLayer(BotLayer):
           if self.border(region):
               inp.append( (region, 3, 'defend') )
 
-      return {'regions' : inp}
+    return {'regions' : inp}
 
 
   def attack_transfer(self, info, input):

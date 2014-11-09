@@ -272,7 +272,7 @@ class Bot(object):
                 out_command_dict = method(info, inp_command_dict) or {}
             except:
                 stderr.write("Unexpected error:" + str(exc_info()[0]))
-                return []
+                return {}
 
             # stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
             if out_command_dict:
