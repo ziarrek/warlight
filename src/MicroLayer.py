@@ -1,11 +1,9 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random
+from util import Map, Region, SuperRegion, Random, get_other_player
 from math import ceil
 
-# get other players name, assumes two constant name: player1, player2
-def get_other_player(player_name):
-	return 'player1' if player_name == 'player1' else 'player2'
+
 
 class MicroLayer(BotLayer):
 

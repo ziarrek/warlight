@@ -1,3 +1,7 @@
+# get other players name, assumes two constant name: player1, player2
+def get_other_player(player_name):
+    return 'player1' if player_name == 'player1' else 'player2'
+
 class Map(object):
     '''
     Map class
