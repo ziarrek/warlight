@@ -184,14 +184,13 @@ class Bot(object):
         info = dict()
         info['world'] = self.map
         info['your_bot'] = self.settings['your_bot']
-        info['regions'] = map(int,regions)
+        info['regions'] = regions
         info['time'] = int(time) * 1.0 / self.n
 
         result = self.call_layers('pick_starting_regions','picked_regions', info)
 
         if result.has_key('picked_regions'):
             picked_regions = result['picked_regions']
-            picked_regions = map(str, picked_regions)
             return ' '.join(picked_regions)
         else:
             return ''
