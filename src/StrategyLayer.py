@@ -8,16 +8,26 @@ class StrategyLayer(BotLayer):
         pass
 
     def pick_starting_regions(self, info, input):
+      chosen_regions = []
+      for region in info.regions:
+        if info.Map.get_region_by_id(region).super_region == 3:
+          chosen_regions.append(region)
+      for region in info.regions:
+        if info.Map.get_region_by_id(region).super_region == 4:
+          chosen_regions.append(region)
+      for region in info.regions:
+        if info.Map.get_region_by_id(region).super_region == 2:
+          chosen_regions.append(region)
+
         # output contains 'placements', will skip all further layers
-        return {'picked_regions': ['19 ', '20', '18', '16', '15', '14', '13', '10', '11', '12', '13', '9' ]}
+        return {'picked_regions': chosen_regions}
 
     def place_armies(self, info, input):
       world = info['world']
       your_bot = info['your_bot']
       super_regions = []
-      for id in range(1, 6):
+      for super_region in world.super_regions:
 
-        super_region = world.get_super_region_by_id(id)
         super_region_neigbours = []
 
         owned_troops = 0
@@ -43,7 +53,7 @@ class StrategyLayer(BotLayer):
 
           #if region.is_on_super_region_border
           for neighbour in region.neighbours:
-            if neighbour.super_region != id:
+            if neighbour.super_region != super_region:
               neighbour_found = False
               for found_neighbour in super_region_neigbours:
                 if neighbour.id == found_neighbour.id:
@@ -75,7 +85,7 @@ class StrategyLayer(BotLayer):
         else:
           super_region_value = 0
 
-        super_regions.append({id : super_region_value})
+        super_regions.append((super_region.id, super_region_value))
 
       return {
         'continents': super_regions
