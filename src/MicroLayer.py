@@ -31,9 +31,9 @@ class MicroLayer(BotLayer):
 
 		self.intended_moves = []
 		placements = []
-		stderr.write('your_bot: '+your_bot)
-		stderr.write('\n\nour regions:'+ ' '.join([reg.id for reg in world.regions if reg.owner == player])+'\n')
-		stderr.write('regions to attack/defend: '+ ' '.join([reg[0] for reg in regions]))
+		# stderr.write('your_bot: '+your_bot)
+		# stderr.write('\n\nour regions:'+ ' '.join([reg.id for reg in world.regions if reg.owner == player])+'\n')
+		# stderr.write('regions to attack/defend: '+ ' '.join([reg[0] for reg in regions]))
 		# distribute the armies by giving half of the remaining number
 		# to the next region, stop when ran out of armies
 		# with 7 armies available, 3 regions will be populated
@@ -42,14 +42,14 @@ class MicroLayer(BotLayer):
 			region_action = region[2]
 			region_obj = world.get_region_by_id(region_id)
 			placement_region_id =''
-			stderr.write('checked region: '+region_id+'\n')
-			stderr.write('region owner: '+ region_obj.owner+'\n')
-			stderr.write('region action: '+region_action+'\n\n')
+			# stderr.write('checked region: '+region_id+'\n')
+			# stderr.write('region owner: '+ region_obj.owner+'\n')
+			# stderr.write('region action: '+region_action+'\n\n')
 			if region_action == 'attack':
 				candidates = []
 				for neighbour in region_obj.neighbours:
-					stderr.write('neighbour id: '+neighbour.id+'\n')
-					stderr.write('is_fog: '+str(neighbour.is_fog)+'\nowner: '+neighbour.owner+'\n\n')
+					# stderr.write('neighbour id: '+neighbour.id+'\n')
+					# stderr.write('is_fog: '+str(neighbour.is_fog)+'\nowner: '+neighbour.owner+'\n\n')
 					if not neighbour.is_fog and neighbour.owner == player:
 						candidates.append(neighbour)
 				if candidates:
@@ -75,6 +75,9 @@ class MicroLayer(BotLayer):
 		regions = self.regions
 		world = info['world']
 
+		player = info['your_bot']
+		opponent = get_other_player(player)
+
 
 		attack_transfers = []
 		for region in regions:
@@ -91,7 +94,7 @@ class MicroLayer(BotLayer):
 				if candidates:
 					move_region = max(candidates,key=lambda x:x.troop_count)
 					move_region_id = move_region.id
-					move_troops_count = move_region.troops_count - 1
+					move_troops_count = move_region.troop_count - 1
 					if move_troops_count:
 						attack_transfers.append((move_region_id, region_id, move_troops_count))
 

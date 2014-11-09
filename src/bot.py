@@ -19,6 +19,10 @@ from math import fmod, pi
 from sys import stderr, stdin, stdout
 from time import clock
 from json import loads
+import pprint
+
+pp = pprint.PrettyPrinter(indent=2,stream=stderr)
+
 
 
 class Bot(object):
@@ -33,6 +37,7 @@ class Bot(object):
         self.map = Map()
         self.layers = layers
         self.n = len(layers)
+        self.round_number = 1
 
     def run(self):
         '''
@@ -67,10 +72,11 @@ class Bot(object):
                     self.setup_map(parts[1:])
 
                 elif command == 'update_map':
+                    stderr.write('Round '+str(self.round_number)+'\n\n')
                     self.update_map(parts[1:])
+                    self.round_number += 1
 
                 elif command == 'pick_starting_regions':
-                    stderr.write('regions: '+' '.join(parts[2:]))
                     stdout.write(self.pick_starting_regions(parts[1], parts[2:]) + '\n')
                     stdout.flush()
 
@@ -91,6 +97,9 @@ class Bot(object):
                     else:
                         stderr.write('Unknown sub command: %s\n' % (sub_command))
                         stderr.flush()
+
+                elif command == 'opponent_moves':
+                    pass
 
                 else:
                     stderr.write('Unknown command: %s\n' % (command))
@@ -191,7 +200,9 @@ class Bot(object):
 
         if result.has_key('picked_regions'):
             picked_regions = result['picked_regions']
-            return ' '.join(picked_regions)
+            output = ' '.join(picked_regions)
+            stderr.write('picked_regions: '+output+'\n')
+            return output
         else:
             return ''
 
@@ -200,6 +211,8 @@ class Bot(object):
         Method to place our troops.
 
         '''
+
+        your_bot = self.settings['your_bot']
 
         info = dict()
         info['world'] = self.map
@@ -211,8 +224,10 @@ class Bot(object):
 
         if result.has_key('placements'):
             placements = result['placements']
-            return ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
+            output = ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
             placement[1]) for placement in placements])
+            stderr.write('placements: '+ output+'\n')
+            return output
         else:
             return ''
 
@@ -221,6 +236,8 @@ class Bot(object):
         Method to attack another region or transfer troops to allied regions.
 
         '''
+
+        your_bot = self.settings['your_bot']
 
         info = dict()
         info['world'] = self.map
@@ -231,8 +248,10 @@ class Bot(object):
 
         if result.has_key('attack_transfers'):
             attack_transfers = result['attack_transfers']
-            return ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
+            output = ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
             attack_transfer[1], attack_transfer[2]) for attack_transfer in attack_transfers])
+            stderr.write('attack_transfers: '+output+'\n')
+            return output
         else:
             return ''
 
@@ -243,12 +262,15 @@ class Bot(object):
         for i, layer in enumerate(self.layers):
             method = getattr(layer, action_name)
             out_command_dict = method(info, inp_command_dict) or {}
+            pp.pprint('method '+action_name+', '+['Strategy', 'Tactics', 'Micro'][i]+'Layer')
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
                 inp_command_dict = out_command_dict
+                pp.pprint(out_command_dict)
+                pp.pprint('')
             else:
                 # else do nothing, the input layer continues to the next layer
-                pass
+                pp.pprint('Empty return value from layer, skipping.\n')
 
             # if an earlier layer takes the decision, return immediately
             if out_command_dict.has_key(required_output):

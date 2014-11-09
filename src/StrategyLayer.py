@@ -24,7 +24,8 @@ class StrategyLayer(BotLayer):
           chosen_regions.append(region_id)
 
         # output contains 'placements', will skip all further layers
-      stderr.write(' '.join(chosen_regions))
+
+      stderr.write('picked_regions: '+' '.join(chosen_regions)+'\n\n')
       return {'picked_regions': chosen_regions}
 
     def place_armies(self, info, input):
