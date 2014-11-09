@@ -6,11 +6,11 @@ from sys import stderr
 class StrategyLayer(BotLayer):
 
     def __init__(self):
-      super_region_data = []
-      data_init = False
-      initial_phase = True
-      expand_protect_phase = False
-      super_region_importance = [1, 0, 2, 1, -1, 0]
+      self.super_region_data_list = []
+      self.data_init = False
+      self.initial_phase = True
+      self.expand_protect_phase = False
+      self.super_region_importance = [1, 0, 2, 1, -1, 0]
 
     def pick_starting_regions(self, info, input):
       regions = info['regions']
@@ -28,6 +28,10 @@ class StrategyLayer(BotLayer):
           chosen_regions.append(region_id)
 
       # output contains 'placements', will skip all further layers
+
+        # output contains 'placements', will skip all further layers
+
+      stderr.write('picked_regions: '+' '.join(chosen_regions)+'\n\n')
       return {'picked_regions': chosen_regions}
 
     def place_armies(self, info, input):
@@ -39,10 +43,10 @@ class StrategyLayer(BotLayer):
       for super_region in world.super_regions:
 
         super_region_data = SuperRegionData()
-        if not data_init:
-          super_region_data_list.append(super_region_data)
+        if not self.data_init:
+          self.super_region_data_list.append(super_region_data)
         else:
-          for temp_super_region_data in super_region_data_list:
+          for temp_super_region_data in self.super_region_data_list:
             if temp_super_region_data.id == super_region.id:
               super_region_data = temp_super_region_data
 
@@ -70,7 +74,7 @@ class StrategyLayer(BotLayer):
             enemy_regions += 1
 
           #if region.is_on_super_region_border
-          
+
           for neighbour in region.neighbours:
             neighbour_found = False
             if neighbour.super_region != super_region:
@@ -80,7 +84,7 @@ class StrategyLayer(BotLayer):
 
             if not neighbour_found:
               super_region_neigbours.append(neighbour)
-        
+
         for neighbour in super_region_neigbours:
           if neighbour.owner == 'neutral':
             neighbour_neutral_regions += 1
@@ -122,30 +126,30 @@ class StrategyLayer(BotLayer):
         '''     
 
       #Ensures old data can stay (when implemented)
-      data_init = True
+      self.data_init = True
 
       #Check if initial phase is done
-      expand_protect_phase = True
-      for super_region_data in super_region_data_list:
+      self.expand_protect_phase = True
+      for super_region_data in self.super_region_data_list:
         if super_region_data.owned_regions == super_region_data.total_regions:
-          initial_phase = False
+          self.initial_phase = False
           expand_protect_phase = False
 
       # Set phases for super regions 
-      for super_region_data in super_region_data_list:
+      for super_region_data in self.super_region_data_list:
         super_region_data.value = 0
         if super_region_data.owned_regions > 0:
           super_region_data.phase = 3
-        elif super_region_neigbours.owned_regions > 0:
+        elif super_region_data.neighbour_owned_regions > 0:
           super_region_data.phase = 2
         else:
           super_region_data.phase = 1
 
       # PHASE Initial
-      if initial_phase:
+      if self.initial_phase:
         focus_super_region = SuperRegionData()
         current_best_occupaction = 0
-        for super_region_data in super_region_data_list:
+        for super_region_data in self.super_region_data_list:
           if current_best_occupaction < super_region_data.owned_troops:
             focus_super_region = super_region_data
           if current_best_occupaction == super_region_data.owned_troops:
@@ -158,12 +162,12 @@ class StrategyLayer(BotLayer):
 
       #PHASE expand and protect
       protection_level = 0
-      if expand_protect_phase:
+      if self.expand_protect_phase:
 
 
         # Choose focus region for expansion
-        focus_super_region = super_region_data_list[0]
-        for super_region_data in super_region_data_list:
+        focus_super_region = self.super_region_data_list[0]
+        for super_region_data in self.super_region_data_list:
           #Check if super region is under occupation by us
           if super_region_data.phase == 3:
             #check if the current focus region is under occupation by us
@@ -174,19 +178,19 @@ class StrategyLayer(BotLayer):
               if focus_super_region.owned_troops < super_region_data.owned_troops:
                 focus_super_region = super_region_data 
               # Check if the value of super region is generally more interesting than the current focus
-              if super_region_importance[focus_super_region.id-1] < super_region_importance[super_region_data.id-1]:
+              if self.super_region_importance[focus_super_region.id-1] < self.super_region_importance[super_region_data.id-1]:
                 pass
 
           elif super_region_data.phase == 2 and focus_super_region == 2:
 
-            if super_region_importance[focus_super_region.id-1] < super_region_importance[super_region_data.id-1]:
+            if self.super_region_importance[focus_super_region.id-1] < self.super_region_importance[super_region_data.id-1]:
               focus_super_region = super_region_data
 
 
 
         # Dividing super regions into protect or expand strategy
         # Protection is found first because the expansion is factored by the amount of expansion
-        for super_region_data in super_region_data_list:
+        for super_region_data in self.super_region_data_list:
           # If super region is owned then protect
           if super_region_data.owned_regions == super_region_data.total_regions:
             #immediate_threat_rate = (super_region_data.neighbour_enemy_troops - (super_region_data.owned_troops / 2)) / super_region_data.total_troops * 10
@@ -201,7 +205,7 @@ class StrategyLayer(BotLayer):
           protection_level = 10  
        
         '''
-        for super_region_data in super_region_data_list:
+        for super_region_data in self.super_region_data_list:
        
           # If super region is not owned at all and is neighbouring owned territory.
           # Then the super region is in interest.
@@ -218,8 +222,8 @@ class StrategyLayer(BotLayer):
         '''
         
         focus_super_region.value = 10 - protection_level
-        for super_region_data in super_region_data_list:
-          super_regions.append((super_region.id, super_region_value))
+        for super_region_data in self.super_region_data_list:
+          super_regions.append((super_region.id, super_region_data.value))
 
 
       return {

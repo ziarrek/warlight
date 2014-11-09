@@ -5,14 +5,16 @@ from util import Map, Region, SuperRegion, Random, get_other_player
 class TacticsLayer(BotLayer):
 
   def __init__(self):
-    pass
+    self.opponent = None
+    self.our_player = None
 
   def pick_starting_regions(self, info, input):
     pass
 
   def place_armies(self, info, input):
-    our_player = info['your_bot']
-    opponent = get_other_player(our_player)
+    self.our_player = info['your_bot']
+    self.opponent = get_other_player(self.our_player)
+
     continents = input['continents']
 
 
@@ -34,16 +36,16 @@ class TacticsLayer(BotLayer):
         if region.owner == 'neutral':
           inp.append( (region.id, 5, 'attack') )
 
-        
-        elif region.owner == opponent:
+
+        elif region.owner == self.opponent:
           inp.append( (region.id, 10, 'attack') )
 
         else:
           # DEFEND: check border regions
-          if border(region):
-              inp.append( (region, 3, 'defend') )
+          if self.border(region):
+              inp.append( (region.id, 3, 'defend') )
 
-      return {'regions' : inp}
+    return {'regions' : inp}
 
 
   def attack_transfer(self, info, input):
@@ -52,11 +54,8 @@ class TacticsLayer(BotLayer):
   #############################################################
 
   def border(self, region):
-    if not region.is_on_super_region_border:
-      return False
-
     for r in region.neighbours:
-      if r.owner == 'opponent':
+      if r.owner == self.opponent:
         return True
 
     return False

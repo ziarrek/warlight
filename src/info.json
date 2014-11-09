@@ -40,11 +40,11 @@
 						"picked_regions": "list<region_id: string>"
 					}
 				},
-				
+
 				"place_armies": {
 					"input": {},
 					"output": {
-						"continents": "list<(superregion_id:string, priority:int)>"
+						"super_regions": "list<(superregion_id:string, priority:int)>"
 					}
 				},
 
@@ -58,7 +58,7 @@
 
 				"place_armies": {
 					"input": {
-						"continents": "list<(superregion_id:string, priority:int)>"
+						"super_regions": "list<(superregion_id:string, priority:int)>"
 					},
 					"output": {
 						"regions": "list<(region_id:string, priority: int, action: string)>"
