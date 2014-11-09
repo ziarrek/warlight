@@ -201,7 +201,7 @@ class Bot(object):
         if result.has_key('picked_regions'):
             picked_regions = result['picked_regions']
             output = ' '.join(picked_regions)
-            stderr.write('picked_regions: '+output+'\n')
+            # stderr.write('picked_regions: '+output+'\n')
             return output
         else:
             return ''
@@ -226,7 +226,7 @@ class Bot(object):
             placements = result['placements']
             output = ', '.join(['%s place_armies %s %d' % (your_bot, placement[0],
             placement[1]) for placement in placements])
-            stderr.write('placements: '+ output+'\n')
+            # stderr.write('placements: '+ output+'\n')
             return output
         else:
             return ''
@@ -250,7 +250,7 @@ class Bot(object):
             attack_transfers = result['attack_transfers']
             output = ', '.join(['%s attack/transfer %s %s %s' % (your_bot, attack_transfer[0],
             attack_transfer[1], attack_transfer[2]) for attack_transfer in attack_transfers])
-            stderr.write('attack_transfers: '+output+'\n')
+            # stderr.write('attack_transfers: '+output+'\n')
             return output
         else:
             return ''
@@ -262,15 +262,14 @@ class Bot(object):
         for i, layer in enumerate(self.layers):
             method = getattr(layer, action_name)
             out_command_dict = method(info, inp_command_dict) or {}
-            stderr.write('method '+action_name+', '+['Strategy', 'Tactics', 'Micro'][i]+'Layer')
+            stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
                 inp_command_dict = out_command_dict
                 pp.pprint(out_command_dict)
-                stderr.write('\n')
             else:
                 # else do nothing, the input layer continues to the next layer
-                stderr.write('Empty return value from layer, skipping.\n')
+                pass
 
             # if an earlier layer takes the decision, return immediately
             if out_command_dict.has_key(required_output):
