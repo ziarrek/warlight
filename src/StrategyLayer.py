@@ -1,6 +1,7 @@
 from BotLayer import BotLayer
 
 from util import Map, Region, SuperRegion, Random
+from sys import stderr
 
 class StrategyLayer(BotLayer):
 
@@ -55,16 +56,17 @@ class StrategyLayer(BotLayer):
             enemy_regions += 1
 
           #if region.is_on_super_region_border
+          
+          neighbour_found = False
           for neighbour in region.neighbours:
             if neighbour.super_region != super_region:
-              neighbour_found = False
               for found_neighbour in super_region_neigbours:
                 if neighbour.id == found_neighbour.id:
                   neighbour_found = True
 
             if not neighbour_found:
               super_region_neigbours.append(neighbour)
-
+        
         for neighbour in super_region_neigbours:
           if region.owner == 'neutral':
             neighbour_neutral_regions += 1
