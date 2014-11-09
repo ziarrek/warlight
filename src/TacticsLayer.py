@@ -1,6 +1,8 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random, get_other_player
+from util import Map, Region, SuperRegion, Random, get_other_player, get_super_region_name
+
+from sys import stderr
 
 class TacticsLayer(BotLayer):
 
@@ -15,9 +17,13 @@ class TacticsLayer(BotLayer):
     self.our_player = info['your_bot']
     self.opponent = get_other_player(self.our_player)
 
-    continents = input['continents']
+    continents = sorted(input['continents'], key=lambda x:x[1],reverse=False)
 
+    for c in continents:
+      stderr.write(get_super_region_name(c[0]) + ": " + str(c[1]) + "\n")
 
+    stderr.write("\n")
+    
     map = info['world']
 
     inp = []
@@ -34,11 +40,11 @@ class TacticsLayer(BotLayer):
 
         # ATTACK: check ADJACENT regions not owned in given continent
         if region.owner == 'neutral':
-          inp.append( (region.id, 5, 'attack') )
+          inp.append( (region.id, 10, 'attack') )
 
 
         elif region.owner == self.opponent:
-          inp.append( (region.id, 10, 'attack') )
+          inp.append( (region.id, 5, 'attack') )
 
         else:
           # DEFEND: check border regions
