@@ -1,6 +1,6 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random
+from util import Map, Region, SuperRegion, Random, get_other_player
 
 class TacticsLayer(BotLayer):
 
@@ -11,7 +11,8 @@ class TacticsLayer(BotLayer):
     pass
 
   def place_armies(self, info, input):
-
+    our_player = info['your_bot']
+    opponent = get_other_player(our_player)
     continents = input['continents']
 
 
@@ -33,7 +34,8 @@ class TacticsLayer(BotLayer):
         if region.owner == 'neutral':
           inp.append( (region.id, 5, 'attack') )
 
-        elif region.owner == 'opponent':
+        
+        elif region.owner == opponent:
           inp.append( (region.id, 10, 'attack') )
 
         else:
