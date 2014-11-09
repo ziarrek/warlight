@@ -34,6 +34,8 @@ class StrategyLayer(BotLayer):
       world = info['world']
       your_bot = info['your_bot']
       super_regions = []
+
+      # Retriving information form the super regions
       for super_region in world.super_regions:
 
         super_region_data = SuperRegionData()
@@ -41,7 +43,7 @@ class StrategyLayer(BotLayer):
           super_region_data_list.append(super_region_data)
         else:
           for temp_super_region_data in super_region_data_list:
-            if temp_super_region_data.id == focus_super_region.id:
+            if temp_super_region_data.id == super_region.id:
               super_region_data = temp_super_region_data
 
         super_region_neigbours = []
@@ -80,13 +82,13 @@ class StrategyLayer(BotLayer):
               super_region_neigbours.append(neighbour)
         
         for neighbour in super_region_neigbours:
-          if region.owner == 'neutral':
+          if neighbour.owner == 'neutral':
             neighbour_neutral_regions += 1
-          elif region.owner == your_bot:
-            neighbour_owned_troops += region.troop_count
+          elif neighbour.owner == your_bot:
+            neighbour_owned_troops += neighbour.troop_count
             neighbour_owned_regions += 1
           else:
-            neighbour_enemy_troops += region.troop_count
+            neighbour_enemy_troops += neighbour.troop_count
             neighbour_enemy_regions += 1
 
 
@@ -105,20 +107,19 @@ class StrategyLayer(BotLayer):
         super_region_data.neighbour_owned_regions = neighbour_owned_regions
         super_region_data.neighbour_enemy_regions = neighbour_enemy_regions
         super_region_data.neighbour_neutral_regions = neighbour_neutral_regions
-'''
+        '''
         if total_troops != 0:
 
-          immediate_thread_rate = (neighbour_enemy_troops - (owned_troops / 2)) / total_troops * 10
+          immediate_threat_rate = (neighbour_enemy_troops - (owned_troops / 2)) / total_troops * 10
           
           own_occupation_rate = owned_regions / total_regions * 10
           
           enemy_occupation_rate = enemy_regions / total_regions * 10
           
-          super_region_value = (immediate_thread_rate + own_occupation_rate) / 2 - (enemy_occupation_rate / 2)
+          super_region_value = (immediate_threat_rate + own_occupation_rate) / 2 - (enemy_occupation_rate / 2)
         else:
           super_region_value = 0
-
-   '''     
+        '''     
 
       #Ensures old data can stay (when implemented)
       data_init = True
@@ -130,6 +131,7 @@ class StrategyLayer(BotLayer):
           initial_phase = False
           expand_protect_phase = False
 
+      # Set phases for super regions 
       for super_region_data in super_region_data_list:
         super_region_data.value = 0
         if super_region_data.owned_regions > 0:
@@ -172,12 +174,12 @@ class StrategyLayer(BotLayer):
               if focus_super_region.owned_troops < super_region_data.owned_troops:
                 focus_super_region = super_region_data 
               # Check if the value of super region is generally more interesting than the current focus
-              if super_region_importance[focus_super_region.id] < super_region_importance[super_region_data.id]:
+              if super_region_importance[focus_super_region.id-1] < super_region_importance[super_region_data.id-1]:
                 pass
 
           elif super_region_data.phase == 2 and focus_super_region == 2:
 
-            if super_region_importance[focus_super_region.id] < super_region_importance[super_region_data.id]:
+            if super_region_importance[focus_super_region.id-1] < super_region_importance[super_region_data.id-1]:
               focus_super_region = super_region_data
 
 
@@ -187,7 +189,7 @@ class StrategyLayer(BotLayer):
         for super_region_data in super_region_data_list:
           # If super region is owned then protect
           if super_region_data.owned_regions == super_region_data.total_regions:
-            #immediate_thread_rate = (super_region_data.neighbour_enemy_troops - (super_region_data.owned_troops / 2)) / super_region_data.total_troops * 10
+            #immediate_threat_rate = (super_region_data.neighbour_enemy_troops - (super_region_data.owned_troops / 2)) / super_region_data.total_troops * 10
             if super_region_data.neighbour_enemy_troops > 0 and super_region_data.neighbour_enemy_troops < 4:
               super_region_data.value = 5
               protection_level += 5
@@ -198,7 +200,7 @@ class StrategyLayer(BotLayer):
         if protection_level > 10:
           protection_level = 10  
        
-'''
+        '''
         for super_region_data in super_region_data_list:
        
           # If super region is not owned at all and is neighbouring owned territory.
@@ -213,7 +215,7 @@ class StrategyLayer(BotLayer):
           # If super region is not completly owned. Then the super region is under occupation
           if super_region_data.owned_regions > 0:
             pass #Not imlemented
-'''
+        '''
         
         focus_super_region.value = 10 - protection_level
         for super_region_data in super_region_data_list:
