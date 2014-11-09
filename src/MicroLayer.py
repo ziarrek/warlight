@@ -18,7 +18,7 @@ class MicroLayer(BotLayer):
 		pass
 
 	def place_armies(self, info, input):
-		regions = self.regions = sorted(input['regions'], key=lambda x:x[1],reversed=True)
+		regions = self.regions = sorted(input['regions'], key=lambda x:x[1],reverse=True)
 
 		world = info['world']
 		self.player = player = info['your_bot']
