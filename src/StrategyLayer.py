@@ -59,6 +59,7 @@ class StrategyLayer(BotLayer):
           
           neighbour_found = False
           for neighbour in region.neighbours:
+          neighbour_found = False
             if neighbour.super_region != super_region:
               for found_neighbour in super_region_neigbours:
                 if neighbour.id == found_neighbour.id:
@@ -98,3 +99,21 @@ class StrategyLayer(BotLayer):
 
     def attack_transfer(self, info, input):
       pass
+
+class SuperRegionData(object):
+  def __init__(self):
+    self.owned_troops = 0
+    self.enemy_troops = 0
+    self.owned_regions = 0
+    self.enemy_regions = 0
+    self.neutral_regions = 0
+    self.neighbour_owned_troops = 0
+    self.neighbour_enemy_troops = 0
+    self.neighbour_owned_regions = 0
+    self.neighbour_enemy_regions = 0
+    self.neighbour_neutral_regions = 0
+
+    total_regions = 0
+    total_troops = 0
+    total_neighbour_regoins = 0
+
