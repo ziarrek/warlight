@@ -72,9 +72,7 @@ class Bot(object):
                     self.setup_map(parts[1:])
 
                 elif command == 'update_map':
-                    stderr.write('Round '+str(self.round_number)+'\n\n')
                     self.update_map(parts[1:])
-                    self.round_number += 1
 
                 elif command == 'pick_starting_regions':
                     stdout.write(self.pick_starting_regions(parts[1], parts[2:]) + '\n')
@@ -171,6 +169,7 @@ class Bot(object):
         '''
         Method to update our map every round.
         '''
+        stderr.write('Round '+str(self.round_number)+'\n\n')
         for region in self.map.regions:
             region.is_fog = True
 
@@ -183,6 +182,7 @@ class Bot(object):
             region.owner = region_owner_id
             region.troop_count = region_troop_count
             region.is_fog = False
+        self.round_number += 1
 
     def pick_starting_regions(self, time, regions):
         '''
@@ -262,15 +262,15 @@ class Bot(object):
         for i, layer in enumerate(self.layers):
             method = getattr(layer, action_name)
             out_command_dict = method(info, inp_command_dict) or {}
-            pp.pprint('method '+action_name+', '+['Strategy', 'Tactics', 'Micro'][i]+'Layer')
+            stderr.write('method '+action_name+', '+['Strategy', 'Tactics', 'Micro'][i]+'Layer')
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
                 inp_command_dict = out_command_dict
                 pp.pprint(out_command_dict)
-                pp.pprint('')
+                stderr.write('\n')
             else:
                 # else do nothing, the input layer continues to the next layer
-                pp.pprint('Empty return value from layer, skipping.\n')
+                stderr.write('Empty return value from layer, skipping.\n')
 
             # if an earlier layer takes the decision, return immediately
             if out_command_dict.has_key(required_output):
