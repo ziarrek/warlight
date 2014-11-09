@@ -20,6 +20,7 @@ from sys import stderr, stdin, stdout, exc_info
 from time import clock
 from json import loads
 import pprint
+import traceback
 
 pp = pprint.PrettyPrinter(indent=2,stream=stderr)
 
@@ -206,7 +207,7 @@ class Bot(object):
             # stderr.write('picked_regions: '+output+'\n')
             return output
         else:
-            return ''
+            return 'No moves'
 
     def place_armies(self, time):
         '''
@@ -233,7 +234,7 @@ class Bot(object):
             # stderr.write('placements: '+ output+'\n')
             return output
         else:
-            return ''
+            return 'No moves'
 
     def attack_transfer(self, time):
         '''
@@ -260,7 +261,7 @@ class Bot(object):
             # stderr.write('attack_transfers: '+output+'\n')
             return output
         else:
-            return ''
+            return 'No moves'
 
     def call_layers(self, action_name, required_output, info):
         inp_command_dict = dict()
@@ -270,11 +271,12 @@ class Bot(object):
             method = getattr(layer, action_name)
             try:
                 out_command_dict = method(info, inp_command_dict) or {}
-            except:
-                stderr.write("Unexpected error:" + str(exc_info()[0]))
+            except Exception:
+                stderr.write("Unexpected error in layer "+str(i)+': \n')
+                 # + '\n'.join(exc_info()))
+                stderr.write(traceback.format_exc())
                 return {}
 
-            # stderr.write(action_name+', '+['Strategy', 'Tactics', 'Micro'][i])
             if out_command_dict:
                 # if layer gave output, give it as input to the next layer
                 inp_command_dict = out_command_dict

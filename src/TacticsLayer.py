@@ -36,14 +36,14 @@ class TacticsLayer(BotLayer):
         if region.owner == 'neutral':
           inp.append( (region.id, 5, 'attack') )
 
-        
+
         elif region.owner == self.opponent:
           inp.append( (region.id, 10, 'attack') )
 
         else:
           # DEFEND: check border regions
           if self.border(region):
-              inp.append( (region, 3, 'defend') )
+              inp.append( (region.id, 3, 'defend') )
 
     return {'regions' : inp}
 
