@@ -81,8 +81,8 @@ class StrategyLayer(BotLayer):
                 if neighbour.id == found_neighbour.id:
                   neighbour_found = True
 
-            if not neighbour_found:
-              super_region_neigbours.append(neighbour)
+              if not neighbour_found:
+                super_region_neigbours.append(neighbour)
 
         for neighbour in super_region_neigbours:
           if neighbour.owner == 'neutral':
@@ -173,27 +173,30 @@ class StrategyLayer(BotLayer):
       protection_level = 0
       if self.expand_protect_phase:
 
-
         # Choose focus region for expansion
         focus_super_region = self.super_region_data_list[0]
         for super_region_data in self.super_region_data_list:
           #Check if super region is under occupation by us
-          if super_region_data.phase == 3:
-            #check if the current focus region is under occupation by us
-            if focus_super_region.phase == 2 or focus_super_region == 4:
-              focus_super_region = super_region_data
-            elif focus_super_region.phase ==  3:
-              # Check which super region has most troops
-              if focus_super_region.owned_troops < super_region_data.owned_troops:
-                focus_super_region = super_region_data 
-              # Check if the value of super region is generally more interesting than the current focus
-              elif focus_super_region.owned_troops == super_region_data.owned_troops:
-                #stderr.write('\n id: ' +focus_super_region.id + ' val: ' + str(super_region_importance[int(float(focus_super_region.id))-1]) + ' | id: '+ str(super_region_data.id) + ' val: ' + str(self.super_region_importance[int(float(super_region_data.id))-1]))
+          if super_region_data.owned_regions != super_region_data.total_regions:
+            if super_region_data.phase == 3:
+              #check if the current focus region is under occupation by us
+              if focus_super_region.phase == 2 or focus_super_region.phase == 4 or focus_super_region.phase == 1:
+                focus_super_region = super_region_data
+              elif focus_super_region.phase ==  3:
+                # Check which super region has most troops
+                if focus_super_region.owned_troops < super_region_data.owned_troops:
+                  focus_super_region = super_region_data 
+                # Check if the value of super region is generally more interesting than the current focus
+                elif focus_super_region.owned_troops == super_region_data.owned_troops:
+                  #stderr.write('\n id: ' +focus_super_region.id + ' val: ' + str(super_region_importance[int(float(focus_super_region.id))-1]) + ' | id: '+ str(super_region_data.id) + ' val: ' + str(self.super_region_importance[int(float(super_region_data.id))-1]))
+                  if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
+                    focus_super_region = super_region_data
+            elif super_region_data.phase == 2:
+              if focus_super_region.phase == 2:
                 if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
                   focus_super_region = super_region_data
-          elif super_region_data.phase == 2 and focus_super_region.phase == 2:
-            if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
-              focus_super_region = super_region_data
+                elif focus_super_region.neighbour_owned_regions == 0 and super_region_data.neighbour_owned_regions > 0:
+                  focus_super_region = super_region_data
 
 
 
@@ -204,9 +207,11 @@ class StrategyLayer(BotLayer):
           if super_region_data.owned_regions == super_region_data.total_regions:
             #immediate_threat_rate = (super_region_data.neighbour_enemy_troops - (super_region_data.owned_troops / 2)) / super_region_data.total_troops * 10
             if super_region_data.neighbour_enemy_troops > 0 and super_region_data.neighbour_enemy_troops < 4:
+              stderr.write('Defending')
               super_region_data.value = 5
               protection_level += 5
             if super_region_data.neighbour_enemy_troops > 4:
+              stderr.write('Defending')
               super_region_data.value = 10
               protection_level += 10
 
@@ -231,8 +236,8 @@ class StrategyLayer(BotLayer):
         '''
         
         focus_super_region.value = 10 - protection_level
-        if focus_super_region.value < 0:
-          focus_super_region.value = 0
+        if focus_super_region.value <= 0:
+          focus_super_region.value = 1
 
       
       stderr.write('continents_output: Init: '+ str(self.initial_phase) + ' '+ str(self.expand_protect_phase)+ '\n')
@@ -262,6 +267,12 @@ class StrategyLayer(BotLayer):
           stderr.write(' neigh_troops: 0'+str(super_region_data.neighbour_owned_troops))
         else:
           stderr.write(' neigh_troops: '+str(super_region_data.neighbour_owned_troops))
+
+        if super_region_data.neighbour_owned_troops < 10:
+          stderr.write(' neigh_enemy: 0'+str(super_region_data.neighbour_enemy_troops))
+        else:
+          stderr.write(' neigh_enemy: '+str(super_region_data.neighbour_enemy_troops))
+
         stderr.write('\n')
       stderr.write('\n\n')
       stderr.flush()
