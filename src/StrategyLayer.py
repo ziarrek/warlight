@@ -229,10 +229,10 @@ class StrategyLayer(BotLayer):
         '''
         
         focus_super_region.value = 10 - protection_level
-        for super_region_data in self.super_region_data_list:
-          super_regions.append((super_region.id, super_region_data.value))
+        if focus_super_region.value < 0:
+          focus_super_region.value = 0
 
-      '''
+      
       stderr.write('continents_output: \n')
       for super_region_data in self.super_region_data_list:
         stderr.write('id: '+str(super_region_data.id))
@@ -263,10 +263,12 @@ class StrategyLayer(BotLayer):
         stderr.write('\n')
       stderr.write('\n\n')
       stderr.flush()
-      '''
+      
 
       for super_region_data in self.super_region_data_list:
         super_regions.append((super_region_data.id, super_region_data.value))
+
+      
 
       return {
         'continents': super_regions
