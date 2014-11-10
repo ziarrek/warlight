@@ -131,11 +131,11 @@ class StrategyLayer(BotLayer):
       self.data_init = True
 
       #Check if initial phase is done
-      self.expand_protect_phase = True
+      self.expand_protect_phase = False
       for super_region_data in self.super_region_data_list:
         if super_region_data.owned_regions == super_region_data.total_regions:
           self.initial_phase = False
-          expand_protect_phase = False
+          expand_protect_phase = True
 
       # Set phases for super regions 
       for super_region_data in self.super_region_data_list:
@@ -152,22 +152,22 @@ class StrategyLayer(BotLayer):
 
       # PHASE Initial
       if self.initial_phase:
-        focus_super_region = SuperRegionData()
+        focus_super_region = self.super_region_data_list[0]
         current_best_occupaction = 0
         for super_region_data in self.super_region_data_list:
-          stderr.write(str(current_best_occupaction) +' '+ str(super_region_data.owned_troops))
-          if current_best_occupaction < super_region_data.owned_troops:
+          if current_best_occupaction < super_region_data.owned_regions:
             #stderr.write()
             focus_super_region = super_region_data
-            current_best_occupaction = super_region_data.owned_troops
-          if current_best_occupaction == super_region_data.owned_troops:
+            current_best_occupaction = super_region_data.owned_regions
+          if current_best_occupaction == super_region_data.owned_regions:
+            if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
+              focus_super_region = super_region_data
             
-            pass
             #NOT IMPLEMENTED: Choose based on the list of preference and enemy occupation
           if super_region_data.owned_troops > 0:
             super_region_data.value = 2
 
-        focus_super_region = 10 
+        focus_super_region.value = 10 
 
       #PHASE expand and protect
       protection_level = 0
