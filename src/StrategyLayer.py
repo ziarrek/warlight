@@ -81,8 +81,8 @@ class StrategyLayer(BotLayer):
                 if neighbour.id == found_neighbour.id:
                   neighbour_found = True
 
-            if not neighbour_found:
-              super_region_neigbours.append(neighbour)
+              if not neighbour_found:
+                super_region_neigbours.append(neighbour)
 
         for neighbour in super_region_neigbours:
           if neighbour.owner == 'neutral':
@@ -262,6 +262,12 @@ class StrategyLayer(BotLayer):
           stderr.write(' neigh_troops: 0'+str(super_region_data.neighbour_owned_troops))
         else:
           stderr.write(' neigh_troops: '+str(super_region_data.neighbour_owned_troops))
+
+        if super_region_data.neighbour_owned_troops < 10:
+          stderr.write(' neigh_enemy: 0'+str(super_region_data.neighbour_owned_troops))
+        else:
+          stderr.write(' neigh_enemy: '+str(super_region_data.neighbour_owned_troops))
+
         stderr.write('\n')
       stderr.write('\n\n')
       stderr.flush()
