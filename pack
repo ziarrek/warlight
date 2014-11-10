@@ -7,5 +7,3 @@ if [[ $? != 0 ]]; then
 fi
 zip -rj bot.zip bot.py util.py BotLayer.py StrategyLayer.py TacticsLayer.py MicroLayer.py
 mv ./bot.zip ../bot.zip	
-cd ..
-mv ./bot.zip ../conquest-engine/player/bot.zip
