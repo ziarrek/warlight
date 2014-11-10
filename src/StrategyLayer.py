@@ -1,7 +1,7 @@
 from BotLayer import BotLayer
 
 from util import Map, Region, SuperRegion, Random
-from sys import stderr
+from sys import stderr, stdout
 
 class StrategyLayer(BotLayer):
 
@@ -27,8 +27,6 @@ class StrategyLayer(BotLayer):
         if world.get_region_by_id(region_id).super_region.id == '2':
           chosen_regions.append(region_id)
 
-      # output contains 'placements', will skip all further layers
-
         # output contains 'placements', will skip all further layers
 
       stderr.write('picked_regions: '+' '.join(chosen_regions)+'\n\n')
@@ -38,6 +36,7 @@ class StrategyLayer(BotLayer):
       world = info['world']
       your_bot = info['your_bot']
       super_regions = []
+      i = 0
 
       # Retriving information form the super regions
       for super_region in world.super_regions:
@@ -45,10 +44,10 @@ class StrategyLayer(BotLayer):
         super_region_data = SuperRegionData()
         if not self.data_init:
           self.super_region_data_list.append(super_region_data)
+          super_region_data.id = super_region.id
         else:
-          for temp_super_region_data in self.super_region_data_list:
-            if temp_super_region_data.id == super_region.id:
-              super_region_data = temp_super_region_data
+          super_region_data = self.super_region_data_list[i]
+          i += 1
 
         super_region_neigbours = []
 
@@ -111,7 +110,11 @@ class StrategyLayer(BotLayer):
         super_region_data.neighbour_owned_regions = neighbour_owned_regions
         super_region_data.neighbour_enemy_regions = neighbour_enemy_regions
         super_region_data.neighbour_neutral_regions = neighbour_neutral_regions
-        '''
+        super_region_data.total_regions = total_regions
+        super_region_data.total_troops = total_troops
+        super_region_data.total_neighbour_regions = total_neighbour_regions
+        
+
         if total_troops != 0:
 
           immediate_threat_rate = (neighbour_enemy_troops - (owned_troops / 2)) / total_troops * 10
@@ -123,7 +126,6 @@ class StrategyLayer(BotLayer):
           super_region_value = (immediate_threat_rate + own_occupation_rate) / 2 - (enemy_occupation_rate / 2)
         else:
           super_region_value = 0
-        '''     
 
       #Ensures old data can stay (when implemented)
       self.data_init = True
@@ -142,16 +144,21 @@ class StrategyLayer(BotLayer):
           super_region_data.phase = 3
         elif super_region_data.neighbour_owned_regions > 0:
           super_region_data.phase = 2
-        else:
+        elif super_region_data.owned_regions == super_region_data.total_regions:
+
           super_region_data.phase = 1
+        else:
+          super_region_data.phase = 4
 
       # PHASE Initial
       if self.initial_phase:
         focus_super_region = SuperRegionData()
         current_best_occupaction = 0
         for super_region_data in self.super_region_data_list:
+          #stderr.write(str(current_best_occupaction) +' '+ str(super_region_data.owned_troops))
           if current_best_occupaction < super_region_data.owned_troops:
             focus_super_region = super_region_data
+            current_best_occupaction = super_region_data.owned_troops
           if current_best_occupaction == super_region_data.owned_troops:
             pass
             #NOT IMPLEMENTED: Choose based on the list of preference and enemy occupation
@@ -171,18 +178,18 @@ class StrategyLayer(BotLayer):
           #Check if super region is under occupation by us
           if super_region_data.phase == 3:
             #check if the current focus region is under occupation by us
-            if focus_super_region.phase == 2:
+            if focus_super_region.phase == 2 or focus_super_region == 4:
               focus_super_region = super_region_data
-            elif focus_super_region ==  3:
+            elif focus_super_region.phase ==  3:
               # Check which super region has most troops
               if focus_super_region.owned_troops < super_region_data.owned_troops:
                 focus_super_region = super_region_data 
               # Check if the value of super region is generally more interesting than the current focus
-              if self.super_region_importance[focus_super_region.id-1] < self.super_region_importance[super_region_data.id-1]:
-                pass
-
+              elif focus_super_region.owned_troops == super_region_data.owned_troops:
+                #stderr.write('\n id: ' +focus_super_region.id + ' val: ' + str(super_region_importance[int(float(focus_super_region.id))-1]) + ' | id: '+ str(super_region_data.id) + ' val: ' + str(self.super_region_importance[int(float(super_region_data.id))-1]))
+                if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
+                  focus_super_region = super_region_data
           elif super_region_data.phase == 2 and focus_super_region == 2:
-
             if self.super_region_importance[focus_super_region.id-1] < self.super_region_importance[super_region_data.id-1]:
               focus_super_region = super_region_data
 
@@ -225,6 +232,41 @@ class StrategyLayer(BotLayer):
         for super_region_data in self.super_region_data_list:
           super_regions.append((super_region.id, super_region_data.value))
 
+      '''
+      stderr.write('continents_output: \n')
+      for super_region_data in self.super_region_data_list:
+        stderr.write('id: '+str(super_region_data.id))
+        if super_region_data.value < 10:
+          stderr.write(' val: 0'+str(super_region_data.value))
+        else:
+          stderr.write(' val: '+str(super_region_data.value))
+        stderr.write(' phase: '+str(super_region_data.phase))
+        if super_region_data.owned_troops < 10:
+          stderr.write(' troops: 0'+str(super_region_data.owned_troops))
+        else:
+          stderr.write(' troops: '+str(super_region_data.owned_troops))
+
+        if super_region_data.owned_regions < 10:
+          stderr.write(' owned_region: 0'+str(super_region_data.owned_regions))
+        else:
+          stderr.write(' owned_region: '+str(super_region_data.owned_regions))
+
+        if super_region_data.total_regions < 10:
+          stderr.write(' total_regions: 0'+str(super_region_data.total_regions))
+        else:
+          stderr.write(' total_regions: '+str(super_region_data.total_regions))
+
+        if super_region_data.neighbour_owned_troops < 10:
+          stderr.write(' neigh_troops: 0'+str(super_region_data.neighbour_owned_troops))
+        else:
+          stderr.write(' neigh_troops: '+str(super_region_data.neighbour_owned_troops))
+        stderr.write('\n')
+      stderr.write('\n\n')
+      stderr.flush()
+      '''
+
+      for super_region_data in self.super_region_data_list:
+        super_regions.append((super_region_data.id, super_region_data.value))
 
       return {
         'continents': super_regions
@@ -250,7 +292,7 @@ class SuperRegionData(object):
 
     self.total_regions = 0
     self.total_troops = 0
-    self.total_neighbour_regoins = 0
+    self.total_neighbour_regions = 0
 
     self.importance = 0
     self.value = 0
