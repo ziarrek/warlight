@@ -67,6 +67,8 @@ class MicroLayer(BotLayer):
 			return (usage, assignment, unfulfilled)
 
 		for region_tup in regions:
+			if not left_armies:
+				break
 			region_id, region_priority, region_action = region_tup
 			region = world.get_region_by_id(region_id)
 
@@ -116,10 +118,7 @@ class MicroLayer(BotLayer):
 					placements_dict[region_id] += final_assignment
 					left_armies -= final_assignment
 
-			if not left_armies:
-				break
-
-		if moves:
+		if left_armies and moves:
 			# redistribute unused armies to attack moves
 			redistribution = int(math.ceil(left_armies *1.0/len(moves)))
 			for i, move in enumerate(moves):
@@ -127,7 +126,6 @@ class MicroLayer(BotLayer):
 					break
 				amount = min(redistribution, left_armies)
 				moves[i] = (move[0], move[1], move[2] + amount)
-				# move[2] += amount
 				placements_dict[move[0]] += amount
 				left_armies -= amount
 		if left_armies:
@@ -149,12 +147,6 @@ class MicroLayer(BotLayer):
 		}
 
 	def attack_transfer(self, info, input):
-		# regions = self.regions
-		# world = info['world']
-
-		# player = info['your_bot']
-		# opponent = get_other_player(player)
-
 
 		attack_transfers = [move for move in self.intended_moves]
 
