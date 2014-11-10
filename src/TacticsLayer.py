@@ -9,6 +9,8 @@ class TacticsLayer(BotLayer):
   def __init__(self):
     self.opponent = None
     self.our_player = None
+    self.map = None
+    self.round = 1
 
   def pick_starting_regions(self, info, input):
     pass
@@ -17,22 +19,28 @@ class TacticsLayer(BotLayer):
     self.our_player = info['your_bot']
     self.opponent = get_other_player(self.our_player)
 
-    continents = sorted(input['continents'], key=lambda x:x[1],reverse=False)
+    #continents = sorted(input['continents'], key=lambda x:x[1],reverse=False)
 
+    self.map = info['world']
+    continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
+
+    stderr.write('Round ' + str(self.round) + '\n')
+    self.round += 1
     for c in continents:
       stderr.write(get_super_region_name(c[0]) + ": " + str(c[1]) + "\n")
 
     stderr.write("\n")
     
-    map = info['world']
 
     inp = []
 
     # iterate through continents in the list
     for continent_tuple in continents:
-
+      
       continent_id = continent_tuple[0]
-      continent    = map.get_super_region_by_id(continent_id)
+      value        = continent_tuple[1]
+      continent    = self.map.get_super_region_by_id(continent_id)
+      
 
       for region in continent.regions:
         if region.is_fog:
@@ -58,6 +66,26 @@ class TacticsLayer(BotLayer):
     pass
 
   #############################################################
+
+
+  def getSuperRegions(self):
+    out = []
+
+    for super_region in self.map.super_regions:
+      num_regions = len(super_region.regions)
+      owned = 0
+      for region in super_region.regions:
+        if region.owner == self.our_player:
+          owned += 1
+
+      out.append((super_region.id, float(owned)/float(num_regions)))
+
+
+    return out
+
+  def to_defend(super_region):
+    pass
+
 
   def border(self, region):
     for r in region.neighbours:
