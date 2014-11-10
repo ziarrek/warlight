@@ -49,20 +49,22 @@ class TacticsLayer(BotLayer):
           continue
 
         # ATTACK: check ADJACENT regions not owned in given continent
+        priority = value * self.valueMultiplier(region)
+
         if region.owner == 'neutral':
-          inp.append( (region.id, value, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(value) + "\n")
+          inp.append( (region.id, priority, 'attack') )
+          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
 
 
         elif region.owner == self.opponent:
-          inp.append( (region.id, value, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(value) + "\n")
+          inp.append( (region.id, priority, 'attack') )
+          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
         else:
           # DEFEND: check border regions
           if self.border(region):
-              inp.append( (region.id, value, 'defend') )
-              stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
+              inp.append( (region.id, priority, 'defend') )
+              stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
       stderr.write("\n")
 
@@ -80,3 +82,15 @@ class TacticsLayer(BotLayer):
         return True
 
     return False
+
+  def valueMultiplier(self, region):
+    confining = 0
+
+    for r in region.neighbours:
+      if r.owner == self.our_player:
+        confining +=1
+
+    if confining > 0:
+      return confining
+    else:
+      return 1
