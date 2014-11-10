@@ -19,10 +19,10 @@ class TacticsLayer(BotLayer):
     self.our_player = info['your_bot']
     self.opponent = get_other_player(self.our_player)
 
-    #continents = sorted(input['continents'], key=lambda x:x[1],reverse=False)
+    continents = sorted(input['continents'], key=lambda x:x[1],reverse=True)
 
     self.map = info['world']
-    continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
+    #continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
 
     stderr.write('Round ' + str(self.round) + '\n')
     self.round += 1
