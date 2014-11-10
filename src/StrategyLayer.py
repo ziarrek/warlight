@@ -155,17 +155,19 @@ class StrategyLayer(BotLayer):
         focus_super_region = SuperRegionData()
         current_best_occupaction = 0
         for super_region_data in self.super_region_data_list:
-          #stderr.write(str(current_best_occupaction) +' '+ str(super_region_data.owned_troops))
+          stderr.write(str(current_best_occupaction) +' '+ str(super_region_data.owned_troops))
           if current_best_occupaction < super_region_data.owned_troops:
+            #stderr.write()
             focus_super_region = super_region_data
             current_best_occupaction = super_region_data.owned_troops
           if current_best_occupaction == super_region_data.owned_troops:
+            
             pass
             #NOT IMPLEMENTED: Choose based on the list of preference and enemy occupation
           if super_region_data.owned_troops > 0:
             super_region_data.value = 2
 
-        focus_super_region = 8  
+        focus_super_region = 10 
 
       #PHASE expand and protect
       protection_level = 0
@@ -189,8 +191,8 @@ class StrategyLayer(BotLayer):
                 #stderr.write('\n id: ' +focus_super_region.id + ' val: ' + str(super_region_importance[int(float(focus_super_region.id))-1]) + ' | id: '+ str(super_region_data.id) + ' val: ' + str(self.super_region_importance[int(float(super_region_data.id))-1]))
                 if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
                   focus_super_region = super_region_data
-          elif super_region_data.phase == 2 and focus_super_region == 2:
-            if self.super_region_importance[focus_super_region.id-1] < self.super_region_importance[super_region_data.id-1]:
+          elif super_region_data.phase == 2 and focus_super_region.phase == 2:
+            if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
               focus_super_region = super_region_data
 
 
@@ -233,7 +235,7 @@ class StrategyLayer(BotLayer):
           focus_super_region.value = 0
 
       
-      stderr.write('continents_output: \n')
+      stderr.write('continents_output: Init: '+ str(self.initial_phase) + ' '+ str(self.expand_protect_phase)+ '\n')
       for super_region_data in self.super_region_data_list:
         stderr.write('id: '+str(super_region_data.id))
         if super_region_data.value < 10:
