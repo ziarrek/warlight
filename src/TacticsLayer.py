@@ -48,16 +48,16 @@ class TacticsLayer(BotLayer):
 
         # ATTACK: check ADJACENT regions not owned in given continent
         if region.owner == 'neutral':
-          inp.append( (region.id, 10, 'attack') )
+          inp.append( (region.id, value, 'attack') )
 
 
         elif region.owner == self.opponent:
-          inp.append( (region.id, 5, 'attack') )
+          inp.append( (region.id, value, 'attack') )
 
         else:
           # DEFEND: check border regions
           if self.border(region):
-              inp.append( (region.id, 3, 'defend') )
+              inp.append( (region.id, value, 'defend') )
 
     return {'regions' : inp}
 
@@ -88,6 +88,9 @@ class TacticsLayer(BotLayer):
 
 
   def border(self, region):
+    if not region.is_on_super_region_border:
+      return False
+
     for r in region.neighbours:
       if r.owner == self.opponent:
         return True
