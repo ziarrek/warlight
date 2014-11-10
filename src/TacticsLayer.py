@@ -1,6 +1,6 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random, get_other_player, get_super_region_name
+from util import Map, Region, SuperRegion, Random, get_other_player, get_super_region_name, get_region_name
 
 from sys import stderr
 
@@ -24,16 +24,12 @@ class TacticsLayer(BotLayer):
     self.map = info['world']
     #continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
 
-    stderr.write('Round ' + str(self.round) + '\n')
-    self.round += 1
-    for c in continents:
-      stderr.write(get_super_region_name(c[0]) + ": " + str(c[1]) + "\n")
-
-    stderr.write("\n")
     
 
     inp = []
 
+    stderr.write('Round ' + str(self.round) + '\n')
+    self.round += 1
     # iterate through continents in the list
     for continent_tuple in continents:
       
@@ -41,6 +37,7 @@ class TacticsLayer(BotLayer):
       value        = continent_tuple[1]
       continent    = self.map.get_super_region_by_id(continent_id)
       
+      stderr.write(get_super_region_name(continent_id) + ": " + str(value) + "\n")
 
       for region in continent.regions:
         if region.is_fog:
@@ -49,15 +46,20 @@ class TacticsLayer(BotLayer):
         # ATTACK: check ADJACENT regions not owned in given continent
         if region.owner == 'neutral':
           inp.append( (region.id, value, 'attack') )
+          stderr.write("\tAttack: " + get_region_name(region.id) + "\n")
 
 
         elif region.owner == self.opponent:
           inp.append( (region.id, value, 'attack') )
+          stderr.write("\tAttack: " + get_region_name(region.id) + "\n")
 
         else:
           # DEFEND: check border regions
           if self.border(region):
               inp.append( (region.id, value, 'defend') )
+              stderr.write("\tDefend: " + get_region_name(region.id) + "\n")
+
+      stderr.write("\n")
 
     return {'regions' : inp}
 
