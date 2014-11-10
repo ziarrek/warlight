@@ -6,10 +6,8 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 zip -rj bot.zip bot.py util.py BotLayer.py StrategyLayer.py TacticsLayer.py MicroLayer.py
-if [[ $# > 0 ]]; then
-	path=$1
-else
-	path="./bot.zip"
-fi
 cd ..
-mv ./src/bot.zip $path
+mv ./src/bot.zip ./bot.zip
+if [[ $# > 0 ]]; then
+	cp ./bot.zip $1
+fi

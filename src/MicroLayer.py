@@ -77,6 +77,9 @@ class MicroLayer(BotLayer):
 
 		placements = [(reg_id, troop_count) for reg_id, troop_count in placements_dict.iteritems()]
 
+		for placement in placements:
+			world.get_region_by_id(placement[0]).troop_count += placement[1]
+
 		return {
 			'placements': placements
 		}
