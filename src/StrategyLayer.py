@@ -135,7 +135,7 @@ class StrategyLayer(BotLayer):
       for super_region_data in self.super_region_data_list:
         if super_region_data.owned_regions == super_region_data.total_regions:
           self.initial_phase = False
-          expand_protect_phase = True
+          self.expand_protect_phase = True
 
       # Set phases for super regions 
       for super_region_data in self.super_region_data_list:
