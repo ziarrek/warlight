@@ -28,16 +28,21 @@ class TacticsLayer(BotLayer):
 
     inp = []
 
-    stderr.write('Round ' + str(self.round) + '\n')
+    stderr.write('\nRound ' + str(self.round) + '\n')
     self.round += 1
     # iterate through continents in the list
+
     for continent_tuple in continents:
       
       continent_id = continent_tuple[0]
       value        = continent_tuple[1]
       continent    = self.map.get_super_region_by_id(continent_id)
       
+      
       stderr.write(get_super_region_name(continent_id) + ": " + str(value) + "\n")
+
+      if value == 0:
+        continue
 
       for region in continent.regions:
         if region.is_fog:
@@ -46,18 +51,18 @@ class TacticsLayer(BotLayer):
         # ATTACK: check ADJACENT regions not owned in given continent
         if region.owner == 'neutral':
           inp.append( (region.id, value, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) + "\n")
+          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(value) + "\n")
 
 
         elif region.owner == self.opponent:
           inp.append( (region.id, value, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) + "\n")
+          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(value) + "\n")
 
         else:
           # DEFEND: check border regions
           if self.border(region):
               inp.append( (region.id, value, 'defend') )
-              stderr.write("\tDefend: " + get_region_name(region.id) + "\n")
+              stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
 
       stderr.write("\n")
 
@@ -69,30 +74,7 @@ class TacticsLayer(BotLayer):
 
   #############################################################
 
-
-  def getSuperRegions(self):
-    out = []
-
-    for super_region in self.map.super_regions:
-      num_regions = len(super_region.regions)
-      owned = 0
-      for region in super_region.regions:
-        if region.owner == self.our_player:
-          owned += 1
-
-      out.append((super_region.id, float(owned)/float(num_regions)))
-
-
-    return out
-
-  def to_defend(super_region):
-    pass
-
-
   def border(self, region):
-    if not region.is_on_super_region_border:
-      return False
-
     for r in region.neighbours:
       if r.owner == self.opponent:
         return True
