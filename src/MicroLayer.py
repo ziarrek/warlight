@@ -3,9 +3,6 @@ from BotLayer import BotLayer
 from util import Map, Region, SuperRegion, Random, get_other_player
 from math import ceil
 from sys import stderr
-import pprint
-
-pp = pprint.PrettyPrinter(stream=stderr,indent=2)
 
 
 
@@ -43,7 +40,7 @@ class MicroLayer(BotLayer):
 		for region in regions:
 			region_id = region[0]
 			region_action = region[2]
-			# stderr.write('checked region: '+region_id+'\n')
+			stderr.write('checked region: '+region_id+'\n')
 			# stderr.write('region owner: '+ region_obj.owner+'\n')
 			# stderr.write('region action: '+region_action+'\n\n')
 			region_obj = world.get_region_by_id(region_id)
@@ -86,12 +83,7 @@ class MicroLayer(BotLayer):
 		for region in regions:
 			region_id = region[0]
 			region_action = region[2]
-			try:
-				region_obj = world.get_region_by_id(region_id)
-			except:
-				stderr.write('The region id that wasnt found: '+ str(region_id)+'\n')
-				pp.pprint(self.regions)
-				raise
+			region_obj = world.get_region_by_id(region_id)
 
 			if region_action == 'attack':
 				# TODO add intended_moves use
