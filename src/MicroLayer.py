@@ -32,8 +32,9 @@ class MicroLayer(BotLayer):
 		starting_armies = info['starting_armies']
 		left_armies = starting_armies
 
+		placements_dict = {}
+
 		self.intended_moves = []
-		placements = []
 		# stderr.write('your_bot: '+your_bot)
 		# stderr.write('\n\nour regions:'+ ' '.join([reg.id for reg in world.regions if reg.owner == player])+'\n')
 		# stderr.write('regions to attack/defend: '+ ' '.join([reg[0] for reg in regions]))
@@ -65,10 +66,16 @@ class MicroLayer(BotLayer):
 			if placement_region_id == '':
 				continue
 			placement_troops_count = int(round(left_armies*1.0/2))
-			placements.append((placement_region_id,placement_troops_count))
+			if placements_dict.has_key(placement_region_id):
+				placements_dict[placement_region_id] += placement_troops_count
+			else:
+				placements_dict[placement_region_id] = placement_troops_count
+
 			left_armies -= placement_troops_count
 			if not left_armies:
 				break
+
+		placements = [(reg_id, troop_count) for reg_id, troop_count in placements_dict.iteritems()]
 
 		return {
 			'placements': placements
