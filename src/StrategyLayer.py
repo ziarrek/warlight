@@ -118,12 +118,13 @@ class StrategyLayer(BotLayer):
         super_region_data.immediate_threat_rate = 0
 
         # Calculate immediate threat
-        for neighbour in super_region_neigbours:
-          if neighbour.owner != your_bot and neighbour.owner != 'neutral':
-            for  neighbour_of_neighbour in neighbour.neighbours:
-              if neighbour_of_neighbour.super_region == super_region and neighbour_of_neighbour.owner == your_bot:
-                if neighbour.troop_count > neighbour_of_neighbour.troop_count:
-                  super_region_data.immediate_threat_rate += 5 + 0.8 * neighbour.troop_count - neighbour_of_neighbour.troop_count
+        if super_region_data.owned_regions == super_region_data.total_regions:
+          for neighbour in super_region_neigbours:
+            if neighbour.owner != your_bot and neighbour.owner != 'neutral':
+              for  neighbour_of_neighbour in neighbour.neighbours:
+                if neighbour_of_neighbour.super_region == super_region and neighbour_of_neighbour.owner == your_bot:
+                  if neighbour.troop_count > neighbour_of_neighbour.troop_count:
+                    super_region_data.immediate_threat_rate += 5 + 0.8 * neighbour.troop_count - neighbour_of_neighbour.troop_count
 
         if total_troops != 0:
 
@@ -147,16 +148,18 @@ class StrategyLayer(BotLayer):
         if super_region_data.owned_regions == super_region_data.total_regions:
           self.initial_phase = False
           self.expand_protect_phase = True
+      if self.expand_protect_phase == False:
+        self.initial_phase = True
 
       # Set phases for super regions 
       for super_region_data in self.super_region_data_list:
         super_region_data.value = 0
-        if super_region_data.owned_regions > 0:
+        if super_region_data.owned_regions == super_region_data.total_regions:
+          super_region_data.phase = 2
+        elif super_region_data.owned_regions > 0:
           super_region_data.phase = 3
         elif super_region_data.neighbour_owned_regions > 0:
           super_region_data.phase = 2
-        elif super_region_data.owned_regions == super_region_data.total_regions:
-          super_region_data.phase = 1
         else:
           super_region_data.phase = 4
 
@@ -219,6 +222,7 @@ class StrategyLayer(BotLayer):
           if super_region_data.owned_regions == super_region_data.total_regions:
             if super_region_data.immediate_threat_rate > 0:
               if super_region_data.immediate_threat_rate > 10:
+                stderr.write('----------------DEFEND----------------')
                 super_region_data.value = 10
                 protection_level += 10
               else:
@@ -255,9 +259,9 @@ class StrategyLayer(BotLayer):
       for super_region_data in self.super_region_data_list:
         stderr.write('id: '+str(super_region_data.id))
         if super_region_data.value < 10:
-          stderr.write(' val: 0'+str(super_region_data.value))
+          stderr.write(' val: 0'+str(int(super_region_data.value)))
         else:
-          stderr.write(' val: '+str(super_region_data.value))
+          stderr.write(' val: '+str(int(super_region_data.value)))
         stderr.write(' phase: '+str(super_region_data.phase))
         if super_region_data.owned_troops < 10:
           stderr.write(' troops: 0'+str(super_region_data.owned_troops))
@@ -279,7 +283,7 @@ class StrategyLayer(BotLayer):
         else:
           stderr.write(' neigh_troops: '+str(super_region_data.neighbour_owned_troops))
 
-        if super_region_data.neighbour_owned_troops < 10:
+        if super_region_data.neighbour_enemy_troops < 10:
           stderr.write(' neigh_enemy: 0'+str(super_region_data.neighbour_enemy_troops))
         else:
           stderr.write(' neigh_enemy: '+str(super_region_data.neighbour_enemy_troops))
