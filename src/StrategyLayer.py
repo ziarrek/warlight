@@ -207,11 +207,13 @@ class StrategyLayer(BotLayer):
                     focus_super_region = super_region_data
             # IN INTEREST
             elif super_region_data.phase == 2:
-              if focus_super_region.phase == 2 or focus_super_region.phase == 1:
+              if focus_super_region.phase == 2:
                 if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
                   focus_super_region = super_region_data
                 elif focus_super_region.neighbour_owned_regions == 0 and super_region_data.neighbour_owned_regions > 0:
                   focus_super_region = super_region_data
+              elif focus_super_region.phase == 1:
+                focus_super_region = super_region_data
 
 
 
