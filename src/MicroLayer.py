@@ -27,6 +27,7 @@ class MicroLayer(BotLayer):
 		self.player = ''
 		self.opponent = ''
 		self.intended_moves = []
+		self.regions_of_interest = defaultdict(lambda: 0)
 		self.riskiness = 0.5
 
 	def pick_starting_regions(self, info, input):
@@ -94,8 +95,9 @@ class MicroLayer(BotLayer):
 					allowed_more -= assignment
 					left_armies -= assignment
 					proposed_moves.append( (chosen.id, region.id, usage+assignment) )
+					self.regions_of_interest[chosen.id] = max(self.regions_of_interest[chosen.id], region_priority)
 
-				# if all attacks have the chance of killing more than half of the opponent's forces, attack
+				# if all attacks summed have the chance of killing more than half of the opponent's forces, attack
 				if needed_more <= needed_attacking_troops * 0.5:
 					moves += proposed_moves
 					troops_used = needed_attacking_troops - needed_more
@@ -109,14 +111,14 @@ class MicroLayer(BotLayer):
 				neighbour_opponent_troop_sum = sum(neighbour_opponent_troops)
 				needed_defending_troops = get_defend_armies(neighbour_opponent_troop_sum)
 				allowed_troops_assignment = min(needed_defending_troops, int(round(starting_armies * region_priority/priorities_total)))
-				unused = region.troop_count - used_troops[region_id]
-				used_troops[region_id] += min(needed_defending_troops, unused)
 
-				if needed_defending_troops > unused:
-					needed_more = needed_defending_troops - unused
-					final_assignment = min(needed_more, allowed_troops_assignment)
-					placements_dict[region_id] += final_assignment
-					left_armies -= final_assignment
+				unused = region.troop_count - used_troops[region_id]
+				usage, assignment, needed_more = get_army_split(unused, allowed_troops_assignment, needed_defending_troops)
+				used_troops[region_id] += usage
+				placements_dict[region_id] = assignment
+				left_armies -= assignment
+
+				self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
 
 		if left_armies and moves:
 			# redistribute unused armies to attack moves
@@ -128,7 +130,7 @@ class MicroLayer(BotLayer):
 				moves[i] = (move[0], move[1], move[2] + amount)
 				placements_dict[move[0]] += amount
 				left_armies -= amount
-		if left_armies:
+		if left_armies and placements_dict:
 			# redistribute unused armies to placements
 			redistribution = int(math.ceil(left_armies *1.0/len(placements_dict)))
 			for placement_region_id in placements_dict:
@@ -147,8 +149,15 @@ class MicroLayer(BotLayer):
 		}
 
 	def attack_transfer(self, info, input):
+		world = info['world']
 
 		attack_transfers = [move for move in self.intended_moves]
+
+		interest = self.regions_of_interest
+		for id in interest:
+			interest[id] += 100
+		ours = [region for world]
+
 
 		return {
 			'attack_transfers': attack_transfers
