@@ -155,7 +155,7 @@ class StrategyLayer(BotLayer):
       for super_region_data in self.super_region_data_list:
         super_region_data.value = 0
         if super_region_data.owned_regions == super_region_data.total_regions:
-          super_region_data.phase = 2
+          super_region_data.phase = 1
         elif super_region_data.owned_regions > 0:
           super_region_data.phase = 3
         elif super_region_data.neighbour_owned_regions > 0:
@@ -180,7 +180,7 @@ class StrategyLayer(BotLayer):
           if super_region_data.owned_troops > 0:
             super_region_data.value = 2
 
-        focus_super_region.value = 10 
+      
 
       #PHASE expand and protect
       if self.expand_protect_phase:
@@ -207,7 +207,7 @@ class StrategyLayer(BotLayer):
                     focus_super_region = super_region_data
             # IN INTEREST
             elif super_region_data.phase == 2:
-              if focus_super_region.phase == 2:
+              if focus_super_region.phase == 2 or focus_super_region.phase == 1:
                 if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
                   focus_super_region = super_region_data
                 elif focus_super_region.neighbour_owned_regions == 0 and super_region_data.neighbour_owned_regions > 0:
@@ -222,7 +222,6 @@ class StrategyLayer(BotLayer):
           if super_region_data.owned_regions == super_region_data.total_regions:
             if super_region_data.immediate_threat_rate > 0:
               if super_region_data.immediate_threat_rate > 10:
-                stderr.write('----------------DEFEND----------------')
                 super_region_data.value = 10
                 protection_level += 10
               else:
