@@ -1,6 +1,6 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random
+from util import Map, Region, SuperRegion, Random, get_super_region_name
 from sys import stderr, stdout
 
 class StrategyLayer(BotLayer):
@@ -18,13 +18,13 @@ class StrategyLayer(BotLayer):
 
       chosen_regions = []
       for region_id in regions:
-        if world.get_region_by_id(region_id).super_region.id == '3':
-          chosen_regions.append(region_id)
-      for region_id in regions:
-        if world.get_region_by_id(region_id).super_region.id == '4':
+        if world.get_region_by_id(region_id).super_region.id == '6':
           chosen_regions.append(region_id)
       for region_id in regions:
         if world.get_region_by_id(region_id).super_region.id == '2':
+          chosen_regions.append(region_id)
+      for region_id in regions:
+        if world.get_region_by_id(region_id).super_region.id == '3':
           chosen_regions.append(region_id)
 
         # output contains 'placements', will skip all further layers
@@ -62,15 +62,20 @@ class StrategyLayer(BotLayer):
         neighbour_enemy_regions = 0
         neighbour_neutral_regions = 0
 
+        total_regions = 0
+        total_neighbour_regions = 0
+
         for region in super_region.regions:
-          if region.owner == 'neutral':
-            neutral_regions += 1
-          elif region.owner == your_bot:
-            owned_troops += region.troop_count
-            owned_regions += 1
-          else:
-            enemy_troops += region.troop_count
-            enemy_regions += 1
+          total_regions += 1
+          if not region.is_fog:  
+            if region.owner == 'neutral':
+              neutral_regions += 1
+            elif region.owner == your_bot:
+              owned_troops += region.troop_count
+              owned_regions += 1
+            else:
+              enemy_troops += region.troop_count
+              enemy_regions += 1
 
           #if region.is_on_super_region_border
 
@@ -85,18 +90,17 @@ class StrategyLayer(BotLayer):
                 super_region_neigbours.append(neighbour)
 
         for neighbour in super_region_neigbours:
-          if neighbour.owner == 'neutral':
-            neighbour_neutral_regions += 1
-          elif neighbour.owner == your_bot:
-            neighbour_owned_troops += neighbour.troop_count
-            neighbour_owned_regions += 1
-          else:
-            neighbour_enemy_troops += neighbour.troop_count
-            neighbour_enemy_regions += 1
+          total_neighbour_regions += 1
+          if not neighbour.is_fog:
+            if neighbour.owner == 'neutral':
+              neighbour_neutral_regions += 1
+            elif neighbour.owner == your_bot:
+              neighbour_owned_troops += neighbour.troop_count
+              neighbour_owned_regions += 1
+            else:
+              neighbour_enemy_troops += neighbour.troop_count
+              neighbour_enemy_regions += 1
 
-
-        total_regions = owned_regions + enemy_regions + neutral_regions
-        total_neighbour_regions = neighbour_enemy_regions + neighbour_owned_regions + neighbour_neutral_regions
         total_troops = owned_troops + enemy_troops
 
         #Storing information in classs SuperRegionData
@@ -122,9 +126,9 @@ class StrategyLayer(BotLayer):
           for neighbour in super_region_neigbours:
             if neighbour.owner != your_bot and neighbour.owner != 'neutral':
               for  neighbour_of_neighbour in neighbour.neighbours:
-                if neighbour_of_neighbour.super_region == super_region and neighbour_of_neighbour.owner == your_bot:
+                if neighbour_of_neighbour.super_region == super_region and neighbour_of_neighbour.owner == your_bot and not neighbour_of_neighbour.is_fog:
                   if neighbour.troop_count > neighbour_of_neighbour.troop_count:
-                    super_region_data.immediate_threat_rate += 5 + 0.8 * neighbour.troop_count - neighbour_of_neighbour.troop_count
+                    super_region_data.immediate_threat_rate += 5 + 1.2 * neighbour.troop_count - neighbour_of_neighbour.troop_count
 
         if total_troops != 0:
 
@@ -151,15 +155,22 @@ class StrategyLayer(BotLayer):
       if self.expand_protect_phase == False:
         self.initial_phase = True
 
+      phase1 = []
+      phase2 = []
+      phase3 = []
+
       # Set phases for super regions 
       for super_region_data in self.super_region_data_list:
         super_region_data.value = 0
         if super_region_data.owned_regions == super_region_data.total_regions:
           super_region_data.phase = 1
+          phase1.append(super_region_data)
         elif super_region_data.owned_regions > 0:
           super_region_data.phase = 3
+          phase3.append(super_region_data)
         elif super_region_data.neighbour_owned_regions > 0:
           super_region_data.phase = 2
+          phase2.append(super_region_data)
         else:
           super_region_data.phase = 4
 
@@ -179,9 +190,7 @@ class StrategyLayer(BotLayer):
             #NOT IMPLEMENTED: Choose based on the list of preference and enemy occupation
           if super_region_data.owned_troops > 0:
             super_region_data.value = 2
-
       
-
       #PHASE expand and protect
       if self.expand_protect_phase:
         protection_level = 0
@@ -233,28 +242,25 @@ class StrategyLayer(BotLayer):
 
         if super_region_protection_count > 0:
           protection_level = (protection_level / super_region_protection_count) / 2
-          if protection_level > 5:
-            protection_level = 5  
-         
-        '''
-        for super_region_data in self.super_region_data_list:
-       
-          # If super region is not owned at all and is neighbouring owned territory.
-          # Then the super region is in interest.
-          if super_region_data.owned_regions == 0:
-            if super_region_data.neighbour_owned_regions > 0:
-              enemy_occupation_rate = 10 - super_region_data.enemy_regions / super_region_data.total_regions * 10
-              
-              pass #Not implemented
+          if protection_level > 8:
+            protection_level = 3
+          else:
+            protection_level = 0  
 
+        for super_region_data in phase2:
+          if super_region_data.enemy_troops > 0:
+            super_region_data.value = 5 - protection_level
+          else:
+            super_region_data.value = 3 - protection_level
 
-          # If super region is not completly owned. Then the super region is under occupation
-          if super_region_data.owned_regions > 0:
-            pass #Not imlemented
-        '''
+        for super_region_data in phase3:
+          if super_region_data.enemy_troops > 0:
+            super_region_data.value = 7 - protection_level
+          else:
+            super_region_data.value = 4 - protection_level
+
+      focus_super_region.value = 9
         
-        focus_super_region.value = 10 - protection_level
-
       
       stderr.write('continents_output: Init: '+ str(self.initial_phase) + ' '+ str(self.expand_protect_phase)+ '\n')
       for super_region_data in self.super_region_data_list:
@@ -296,7 +302,9 @@ class StrategyLayer(BotLayer):
 
 
         stderr.write('\n')
+      stderr.write(' Focus SR:'+str(get_super_region_name(focus_super_region.id)))
       stderr.write('\n\n')
+
       stderr.flush()
       
 
