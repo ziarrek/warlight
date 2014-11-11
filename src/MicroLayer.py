@@ -128,7 +128,7 @@ class MicroLayer(BotLayer):
 				moves[i] = (move[0], move[1], move[2] + amount)
 				placements_dict[move[0]] += amount
 				left_armies -= amount
-		if left_armies:
+		if left_armies and placements_dict:
 			# redistribute unused armies to placements
 			redistribution = int(math.ceil(left_armies *1.0/len(placements_dict)))
 			for placement_region_id in placements_dict:
