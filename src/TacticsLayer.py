@@ -25,23 +25,23 @@ class TacticsLayer(BotLayer):
     #continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
 
     # check for all zeros
-    deadlocks = 0
-
-    for c in continents:
-      continent = self.map.get_super_region_by_id(c[0])
-      if self.get_number_owned_regions(continent) == len(continent.regions) or c[1] == 0:
-        deadlocks += 1
-
-    
-    if deadlocks == len(continents):
-      conts = []
-      for c in continents:
-        if c[1] == 0:
-          conts.append((c[0], 1))
-        else:
-          conts.append((c[0],c[1]))
-      continents = conts
-
+#    deadlocks = 0
+#
+#    for c in continents:
+#      continent = self.map.get_super_region_by_id(c[0])
+#      if self.get_number_owned_regions(continent) == len(continent.regions) or c[1] == 0:
+#        deadlocks += 1
+#
+#    
+#    if deadlocks == len(continents):
+#      conts = []
+#      for c in continents:
+#        if c[1] == 0:
+#          conts.append((c[0], 1))
+#        else:
+#          conts.append((c[0],c[1]))
+#      continents = conts
+#
     inp = []
 
     stderr.write('\nRound ' + str(self.round) + '\n')
@@ -69,21 +69,21 @@ class TacticsLayer(BotLayer):
 
         if region.owner == 'neutral':
           inp.append( (region.id, priority, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
+#          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
 
 
         elif region.owner == self.opponent:
           inp.append( (region.id, priority, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
+ #         stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
         else:
           # DEFEND: check border regions
           if self.border(region):
             priority = value * self.defend_value_multiplier(region)
             inp.append( (region.id, value, 'defend') )
-            stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
+ #           stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
 
-      stderr.write("\n")
+#      stderr.write("\n")
 
     return {'regions' : inp}
 
