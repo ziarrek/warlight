@@ -1,6 +1,6 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random, get_other_player
+from util import Map, Region, SuperRegion, Random, get_other_player, get_region_name
 import math
 import pprint
 from collections import defaultdict
@@ -27,7 +27,7 @@ class MicroLayer(BotLayer):
 		self.player = ''
 		self.opponent = ''
 		self.intended_moves = []
-		# self.regions_of_interest = defaultdict(lambda: 0)
+		self.regions_of_interest = defaultdict(lambda: 0)
 		self.riskiness = 0.5
 
 	def pick_starting_regions(self, info, input):
@@ -35,7 +35,7 @@ class MicroLayer(BotLayer):
 
 	def place_armies(self, info, input):
 		regions = self.regions = sorted(input['regions'], key=lambda x:x[1],reverse=True)
-		# self.regions_of_interest.clear()
+		self.regions_of_interest.clear()
 
 		world = info['world']
 		your_bot = info['your_bot']
@@ -68,6 +68,8 @@ class MicroLayer(BotLayer):
 					unfulfilled = more_needed - assignment
 			return (usage, assignment, unfulfilled)
 
+		pp.pprint(regions)
+
 		for region_tup in regions:
 			if not left_armies:
 				break
@@ -77,7 +79,7 @@ class MicroLayer(BotLayer):
 			if region_action == 'attack':
 				opponent_troops = region.troop_count
 				needed_attacking_troops = get_attack_armies(opponent_troops)
-				allowed_troops_assignment = min(needed_attacking_troops, int(round(starting_armies*region_priority/priorities_total)))
+				allowed_troops_assignment = min(needed_attacking_troops, int(math.ceil(starting_armies*region_priority/priorities_total)))
 				candidates = sorted([neighbour for neighbour in region.neighbours if neighbour.owner == player],key=lambda x:x.troop_count,reverse=True)
 				candidate_unused_troops = {c.id: c.troop_count - used_troops[c.id] for c in candidates}
 
@@ -96,7 +98,7 @@ class MicroLayer(BotLayer):
 					allowed_more -= assignment
 					left_armies -= assignment
 					proposed_moves.append( (chosen.id, region.id, usage+assignment) )
-					# self.regions_of_interest[chosen.id] = max(self.regions_of_interest[chosen.id], region_priority)
+					self.regions_of_interest[chosen.id] = max(self.regions_of_interest[chosen.id], region_priority)
 
 				# if all attacks summed have the chance of killing more than half of the opponent's forces, attack
 				if needed_more <= needed_attacking_troops * 0.5:
@@ -116,10 +118,10 @@ class MicroLayer(BotLayer):
 				unused = region.troop_count - used_troops[region_id]
 				usage, assignment, needed_more = get_army_split(unused, allowed_troops_assignment, needed_defending_troops)
 				used_troops[region_id] += usage
-				placements_dict[region_id] = assignment
+				placements_dict[region_id] += assignment
 				left_armies -= assignment
 
-				# self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
+				self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
 
 		if left_armies and moves:
 			# redistribute unused armies to attack moves
@@ -141,6 +143,23 @@ class MicroLayer(BotLayer):
 				placements_dict[placement_region_id] += amount
 				left_armies -= amount
 
+		pp.pprint(self.regions_of_interest)
+
+		# distribute unused troops from frontal regions to attack moves
+		for region_id, region_priority, region_action in regions:
+			region = world.get_region_by_id(region_id)
+			unused = region.troop_count - used_troops[region_id]
+			if region_id in self.regions_of_interest and unused:
+				stderr.write(get_region_name(region_id)+': unused troops: '+str(unused))
+				local_moves = sorted([(i, move) for i, move in enumerate(moves) if move[0]==region_id],key=lambda x:x[1][2],reverse=True)
+				pp.pprint(local_moves)
+				if local_moves:
+					i, best_move = local_moves[0]
+					from_reg, to_reg, troops = best_move
+					moves[i] = (from_reg,to_reg,troops+unused)
+					stderr.write('Move from '+get_region_name(from_reg)+' to '+get_region_name(to_reg)+': adding '+str(unused))
+					used_troops[region_id] += unused
+
 		placements = [(reg_id, troop_count) for reg_id, troop_count in placements_dict.iteritems() if troop_count > 0]
 
 		self.intended_moves = moves
@@ -154,42 +173,63 @@ class MicroLayer(BotLayer):
 		player = info['your_bot']
 		opponent = get_other_player(player)
 
-		attack_transfers = [move for move in self.intended_moves]
-
-		# # algorithm for moving the idle armies to nearest region of interest
-		# alg_iter = 50 # acts as infinity - initial value of interest regions
-		# interest_regions = self.regions_of_interest
-		# for region_id in interest_regions:
-		# 	# difference between = (go to closest interest regions) and += (take priority into consideration) - TEST!
-		# 	interest_regions[region_id] = alg_iter # or += alg_iter (see above)
-		# our_regions = {region.id: [False, 0, None, region] for region in world.regions if region.owner == player}
-		# # pp.pprint(our_regions)
-		# # pp.pprint(interest_regions)
-		# for region_id, value in interest_regions.iteritems():
-		# 	# pp.pprint(our_regions[region_id])
-		# 	our_regions[region_id][:2] = [True, value]
+		attack_transfers = []
 
 
-		# for i in xrange(0,alg_iter):
-		# 	new_regions = dict(our_regions)
-		# 	for region_id, region_tup in our_regions.iteritems():
-		# 		is_interest, value, direction, region = tuple(region_tup)
-		# 		if not is_interest:
-		# 			for neighbour in region.neighbours:
-		# 				if neighbour.id in our_regions:
-		# 					neighbour_value = our_regions[neighbour.id][1]
-		# 					if neighbour_value - 1 > value:
-		# 						value = neighbour_value - 1
-		# 						direction = neighbour
-		# 			new_regions[region_id] = [is_interest, value, direction, region]
-		# 	our_regions = new_regions
+		# algorithm for moving the idle armies to nearest region of interest
+		alg_iter = 10 # acts as infinity - initial value of interest regions
+		interest_regions = self.regions_of_interest
 
-		# for region_id, region_tup in our_regions.iteritems():
-		# 	idle_region = region_tup[3]
-		# 	if region_id not in interest_regions:
-		# 		troop_count = idle_region.troop_count
-		# 		if troop_count > 1 and direction:
-		# 			attack_transfers.append( (idle_region.id, direction.id, troop_count - 1) )
+		# pp.pprint(interest_regions)
+
+		deferred_idle_moves = []
+
+		for region_id in interest_regions:
+			# difference between = (go to closest interest regions) and += (take priority into consideration) - TEST!
+			interest_regions[region_id] = alg_iter # or += alg_iter (see above)
+		our_regions = {region.id: [False, 0, None, region] for region in world.regions if region.owner == player}
+		# pp.pprint(our_regions)
+		# pp.pprint(interest_regions)
+		for region_id, value in interest_regions.iteritems():
+			# pp.pprint(our_regions[region_id])
+			our_regions[region_id][:2] = [True, value]
+
+
+		for i in xrange(0,alg_iter):
+			new_regions = dict(our_regions)
+			for region_id, region_tup in our_regions.iteritems():
+				is_interest, value, direction, region = tuple(region_tup)
+				if not is_interest:
+					for neighbour in region.neighbours:
+						if neighbour.id in our_regions:
+							neighbour_value = our_regions[neighbour.id][1]
+							if neighbour_value - 1 > value:
+								value = neighbour_value - 1
+								direction = neighbour
+					new_regions[region_id] = [is_interest, value, direction, region]
+			our_regions = new_regions
+
+		# pp.pprint(our_regions)
+
+		for region_id, region_tup in our_regions.iteritems():
+			idle_region = region_tup[3]
+			direction = region_tup[2]
+			if region_id not in interest_regions:
+				# pp.pprint(region_tup)
+				troop_count = idle_region.troop_count
+				# pp.pprint(troop_count)
+				# pp.pprint(direction)
+				if troop_count > 1 and direction:
+					move = (idle_region.id, direction.id, troop_count - 1)
+					if direction.id in interest_regions:
+						attack_transfers.append(move)
+					else:
+						deferred_idle_moves.append(move)
+					stderr.write('move '+str(troop_count)+' idle troops from '+get_region_name(idle_region.id)+' to '+get_region_name(direction.id)+'\n')
+
+		attack_transfers += [move for move in self.intended_moves]
+
+		attack_transfers += deferred_idle_moves
 
 		return {
 			'attack_transfers': attack_transfers
