@@ -11,17 +11,32 @@ class TacticsLayer(BotLayer):
     self.our_player = None
     self.map = None
     self.round = 1
+    self.behaviour = "defensive"
+    self.owned_regions = 3
 
   def pick_starting_regions(self, info, input):
     pass
 
   def place_armies(self, info, input):
+    self.map = info['world']
     self.our_player = info['your_bot']
     self.opponent = get_other_player(self.our_player)
 
+    # REINFORCEMENT LEARNING
+#    owned_regions = self.get_owned_regions()
+   # stderr.write("reinf " + str(owned_regions) + " " + str(self.owned_regions) + "\n")
+#    if owned_regions < self.owned_regions:
+#      self.behaviour = "aggressive"
+#      stderr.write("aggressive\n")
+#    else:
+#      self.behaviour = "defensive"
+#      
+#    self.owned_regions = owned_regions
+
+
+
     continents = sorted(input['continents'], key=lambda x:x[1],reverse=True)
 
-    self.map = info['world']
     #continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
 
     # check for all zeros
@@ -69,21 +84,22 @@ class TacticsLayer(BotLayer):
 
         if region.owner == 'neutral':
           inp.append( (region.id, priority, 'attack') )
-#          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
-
+          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
 
         elif region.owner == self.opponent:
+          if self.behaviour == "aggressive":
+            priority *= 2 
           inp.append( (region.id, priority, 'attack') )
- #         stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
+          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
         else:
           # DEFEND: check border regions
-          if self.border(region):
+          if self.border(region) and self.in_danger(region):
             priority = value * self.defend_value_multiplier(region)
             inp.append( (region.id, value, 'defend') )
- #           stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
+            stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
 
-#      stderr.write("\n")
+      stderr.write("\n")
 
     return {'regions' : inp}
 
@@ -128,3 +144,17 @@ class TacticsLayer(BotLayer):
       if region.owner == self.our_player:
         sum +=1
     return sum
+
+  def get_owned_regions(self):
+    cnt = 0
+    for region in self.map.regions:
+      if region.owner == self.our_player:
+        cnt += 1
+    return cnt
+
+  def in_danger(self, region):
+    troops = region.troop_count
+    for r in region.neighbours:
+      if r.troop_count > troops:
+        return True
+    return False
