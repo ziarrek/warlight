@@ -27,7 +27,7 @@ class MicroLayer(BotLayer):
 		self.player = ''
 		self.opponent = ''
 		self.intended_moves = []
-		self.regions_of_interest = defaultdict(lambda: 0)
+		# self.regions_of_interest = defaultdict(lambda: 0)
 		self.riskiness = 0.5
 
 	def pick_starting_regions(self, info, input):
@@ -35,6 +35,7 @@ class MicroLayer(BotLayer):
 
 	def place_armies(self, info, input):
 		regions = self.regions = sorted(input['regions'], key=lambda x:x[1],reverse=True)
+		# self.regions_of_interest.clear()
 
 		world = info['world']
 		your_bot = info['your_bot']
@@ -95,7 +96,7 @@ class MicroLayer(BotLayer):
 					allowed_more -= assignment
 					left_armies -= assignment
 					proposed_moves.append( (chosen.id, region.id, usage+assignment) )
-					self.regions_of_interest[chosen.id] = max(self.regions_of_interest[chosen.id], region_priority)
+					# self.regions_of_interest[chosen.id] = max(self.regions_of_interest[chosen.id], region_priority)
 
 				# if all attacks summed have the chance of killing more than half of the opponent's forces, attack
 				if needed_more <= needed_attacking_troops * 0.5:
@@ -118,7 +119,7 @@ class MicroLayer(BotLayer):
 				placements_dict[region_id] = assignment
 				left_armies -= assignment
 
-				self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
+				# self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
 
 		if left_armies and moves:
 			# redistribute unused armies to attack moves
@@ -150,14 +151,45 @@ class MicroLayer(BotLayer):
 
 	def attack_transfer(self, info, input):
 		world = info['world']
+		player = info['your_bot']
+		opponent = get_other_player(player)
 
 		attack_transfers = [move for move in self.intended_moves]
 
-		interest = self.regions_of_interest
-		for id in interest:
-			interest[id] += 100
-		ours = [region for world]
+		# # algorithm for moving the idle armies to nearest region of interest
+		# alg_iter = 50 # acts as infinity - initial value of interest regions
+		# interest_regions = self.regions_of_interest
+		# for region_id in interest_regions:
+		# 	# difference between = (go to closest interest regions) and += (take priority into consideration) - TEST!
+		# 	interest_regions[region_id] = alg_iter # or += alg_iter (see above)
+		# our_regions = {region.id: [False, 0, None, region] for region in world.regions if region.owner == player}
+		# # pp.pprint(our_regions)
+		# # pp.pprint(interest_regions)
+		# for region_id, value in interest_regions.iteritems():
+		# 	# pp.pprint(our_regions[region_id])
+		# 	our_regions[region_id][:2] = [True, value]
 
+
+		# for i in xrange(0,alg_iter):
+		# 	new_regions = dict(our_regions)
+		# 	for region_id, region_tup in our_regions.iteritems():
+		# 		is_interest, value, direction, region = tuple(region_tup)
+		# 		if not is_interest:
+		# 			for neighbour in region.neighbours:
+		# 				if neighbour.id in our_regions:
+		# 					neighbour_value = our_regions[neighbour.id][1]
+		# 					if neighbour_value - 1 > value:
+		# 						value = neighbour_value - 1
+		# 						direction = neighbour
+		# 			new_regions[region_id] = [is_interest, value, direction, region]
+		# 	our_regions = new_regions
+
+		# for region_id, region_tup in our_regions.iteritems():
+		# 	idle_region = region_tup[3]
+		# 	if region_id not in interest_regions:
+		# 		troop_count = idle_region.troop_count
+		# 		if troop_count > 1 and direction:
+		# 			attack_transfers.append( (idle_region.id, direction.id, troop_count - 1) )
 
 		return {
 			'attack_transfers': attack_transfers
