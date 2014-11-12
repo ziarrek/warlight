@@ -128,7 +128,7 @@ class StrategyLayer(BotLayer):
               for  neighbour_of_neighbour in neighbour.neighbours:
                 if neighbour_of_neighbour.super_region == super_region and neighbour_of_neighbour.owner == your_bot and not neighbour_of_neighbour.is_fog:
                   if neighbour.troop_count > neighbour_of_neighbour.troop_count:
-                    super_region_data.immediate_threat_rate += 5 + 1.2 * neighbour.troop_count - neighbour_of_neighbour.troop_count
+                    super_region_data.immediate_threat_rate += 14 + (0.6 * neighbour.troop_count - neighbour_of_neighbour.troop_count) 
 
         if total_troops != 0:
 
@@ -179,14 +179,17 @@ class StrategyLayer(BotLayer):
         focus_super_region = self.super_region_data_list[0]
         current_best_occupaction = 0
         for super_region_data in self.super_region_data_list:
-          if current_best_occupaction < super_region_data.owned_regions:
+          if current_best_occupaction < super_region_data.owned_regions / super_region_data.total_regions:
             #stderr.write()
             focus_super_region = super_region_data
             current_best_occupaction = super_region_data.owned_regions
-          if current_best_occupaction == super_region_data.owned_regions:
-            if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
+          if current_best_occupaction == super_region_data.owned_regions / super_region_data.total_regions:
+            if focus_super_region.owned_troops < super_region_data.owned_troops:
               focus_super_region = super_region_data
-            
+            else:
+              if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
+                focus_super_region = super_region_data
+              
             #NOT IMPLEMENTED: Choose based on the list of preference and enemy occupation
           if super_region_data.owned_troops > 0:
             super_region_data.value = 2
@@ -239,6 +242,8 @@ class StrategyLayer(BotLayer):
                 super_region_data.value = super_region_data.immediate_threat_rate
                 protection_level += super_region_data.immediate_threat_rate
               super_region_protection_count += 1
+            if super_region_data.value == 0 and super_region_data.immediate_threat_rate > 0
+              super_region_value == 1
 
         if super_region_protection_count > 0:
           protection_level = (protection_level / super_region_protection_count) / 2
