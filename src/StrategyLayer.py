@@ -18,13 +18,13 @@ class StrategyLayer(BotLayer):
 
       chosen_regions = []
       for region_id in regions:
-        if world.get_region_by_id(region_id).super_region.id == '6':
+        if world.get_region_by_id(region_id).super_region.id == '3':
+          chosen_regions.append(region_id)
+      for region_id in regions:
+        if world.get_region_by_id(region_id).super_region.id == '4':
           chosen_regions.append(region_id)
       for region_id in regions:
         if world.get_region_by_id(region_id).super_region.id == '2':
-          chosen_regions.append(region_id)
-      for region_id in regions:
-        if world.get_region_by_id(region_id).super_region.id == '3':
           chosen_regions.append(region_id)
 
         # output contains 'placements', will skip all further layers

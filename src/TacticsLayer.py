@@ -11,17 +11,32 @@ class TacticsLayer(BotLayer):
     self.our_player = None
     self.map = None
     self.round = 1
+    self.behaviour = "defensive"
+    self.owned_regions = 3
 
   def pick_starting_regions(self, info, input):
     pass
 
   def place_armies(self, info, input):
+    self.map = info['world']
     self.our_player = info['your_bot']
     self.opponent = get_other_player(self.our_player)
 
+    # REINFORCEMENT LEARNING
+#    owned_regions = self.get_owned_regions()
+   # stderr.write("reinf " + str(owned_regions) + " " + str(self.owned_regions) + "\n")
+#    if owned_regions < self.owned_regions:
+#      self.behaviour = "aggressive"
+#      stderr.write("aggressive\n")
+#    else:
+#      self.behaviour = "defensive"
+#      
+#    self.owned_regions = owned_regions
+
+
+
     continents = sorted(input['continents'], key=lambda x:x[1],reverse=True)
 
-    self.map = info['world']
     #continents = sorted(self.getSuperRegions(), key=lambda x:x[1],reverse=True)
 
     # check for all zeros
@@ -57,9 +72,15 @@ class TacticsLayer(BotLayer):
       
       stderr.write(get_super_region_name(continent_id) + ": " + str(value) + "\n")
 
-      if value == 0:
-        continue
-
+      ### CHECK INVADE #######################
+      if value == 0:                         #
+        for region in continent.regions:
+          if self.invade(region):
+            inp.append( ( region.id, 10, 'attack') )
+            stderr.write("Invade " + get_region_name(region.id) + "\n")
+        continue                             #
+#      ########################################
+    
       for region in continent.regions:
         if region.is_fog:
           continue
@@ -69,21 +90,22 @@ class TacticsLayer(BotLayer):
 
         if region.owner == 'neutral':
           inp.append( (region.id, priority, 'attack') )
-#          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
-
+          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
 
         elif region.owner == self.opponent:
+          if self.behaviour == "aggressive":
+            priority *= 2 
           inp.append( (region.id, priority, 'attack') )
- #         stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
+          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
         else:
           # DEFEND: check border regions
-          if self.border(region):
+          if self.border(region) and self.in_danger(region):
             priority = value * self.defend_value_multiplier(region)
-            inp.append( (region.id, value, 'defend') )
- #           stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(value) + "\n")
+            inp.append( (region.id, priority, 'defend') )
+            stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
-#      stderr.write("\n")
+      stderr.write("\n")
 
     return {'regions' : inp}
 
@@ -114,13 +136,19 @@ class TacticsLayer(BotLayer):
 
   def defend_value_multiplier(self, region):
     if not region.is_on_super_region_border:
-      return 1
+      return 0.5
 
     super_region = region.super_region
-    if float(self.get_number_owned_regions(super_region)) / float(len(super_region.regions)) > 0.5:
+    owned_regions = float(self.get_number_owned_regions(super_region))
+    tot_regions = float(len(super_region.regions))
+    percentage = owned_regions / tot_regions
+
+    stderr.write("defend mult: " + get_region_name(region.id) + ": " + str(owned_regions) + "/" + str(tot_regions) + " = " + str(percentage))
+    if percentage > 0.5:
+      stderr.write("applying defend mult")
       return 2
 
-    return 1
+    return 0.5
 
   def get_number_owned_regions(self, super_region):
     sum = 0
@@ -128,3 +156,46 @@ class TacticsLayer(BotLayer):
       if region.owner == self.our_player:
         sum +=1
     return sum
+
+  def get_owned_regions(self):
+    cnt = 0
+    for region in self.map.regions:
+      if region.owner == self.our_player:
+        cnt += 1
+    return cnt
+
+  def in_danger(self, region):
+    troops = region.troop_count
+    for r in region.neighbours:
+      if r.troop_count > troops:
+        return True
+    return False
+
+  def we_have_regions(self, super_region):
+    for region in super_region.regions:
+      if not region.is_fog and region.owner == self.our_player:
+        return True
+    return False
+
+  def invade(self, region):
+    super_region = region.super_region
+
+    if region.is_fog or region.owner != self.opponent or not region.is_on_super_region_border or self.we_have_regions(super_region):
+      return False
+
+    troops = region.troop_count
+    our_max_troops = 0
+
+    for r in region.neighbours:
+      if r.is_fog or r.owner != self.our_player or r.super_region == super_region:
+        continue
+      # starting by being conservative
+      if r.troop_count < troops:
+        return False
+      elif r.troop_count > our_max_troops:
+        our_max_troops = r.troop_count
+
+    return True
+
+
+
