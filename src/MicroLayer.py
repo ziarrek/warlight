@@ -70,14 +70,14 @@ class MicroLayer(BotLayer):
 			return (usage, assignment, unfulfilled)
 
 		for region_id, region_priority, region_action in regions:
-			if not left_armies:
-				break
+			# if not left_armies:
+				# break
 			region = world.get_region_by_id(region_id)
 
 			if region_action == 'attack':
 				opponent_troops = region.troop_count
 				needed_attacking_troops = get_attack_armies(opponent_troops)
-				allowed_troops_assignment = min(needed_attacking_troops, int(math.ceil(starting_armies*region_priority/priorities_total)))
+				allowed_troops_assignment = min(left_armies, needed_attacking_troops, int(math.ceil(starting_armies*region_priority/priorities_total)))
 				candidates = sorted([neighbour for neighbour in region.neighbours if not neighbour.is_fog and neighbour.owner == player],key=lambda x:x.troop_count,reverse=True)
 				candidate_unused_troops = {c.id: c.troop_count - used_troops[c.id] for c in candidates}
 
@@ -86,11 +86,13 @@ class MicroLayer(BotLayer):
 				needed_more = needed_attacking_troops
 				allowed_more = allowed_troops_assignment
 				for chosen in candidates:
-					if needed_more <= 0 or allowed_more <= 0:
+					if needed_more <= 0:
 						break
 					unused = candidate_unused_troops[chosen.id]
 					usage, assignment, needed_more = get_army_split(unused,allowed_more,needed_more)
 
+					if unused<1 and assignment<1:
+						continue
 					placements_dict[chosen.id] += assignment
 					chosen.troop_count += assignment
 					used_troops[chosen.id] += usage + assignment
@@ -101,6 +103,7 @@ class MicroLayer(BotLayer):
 
 				# if all attacks summed have the chance of killing more than half of the opponent's forces, attack
 
+
 				if needed_more <= needed_attacking_troops * 0.5:
 					moves += proposed_moves
 					troops_used = needed_attacking_troops - needed_more
@@ -109,6 +112,7 @@ class MicroLayer(BotLayer):
 					for start_id, end_id, troops in proposed_moves:
 						used_troops[start_id] -= troops
 
+
 			elif region_action == 'defend':
 				neighbour_opponents = [neigh for neigh in region.neighbours if not neigh.is_fog and neigh.owner == opponent]
 
@@ -116,12 +120,12 @@ class MicroLayer(BotLayer):
 				attacks_from_here = [move for move in moves if move[0]==region_id]
 				if len(neighbour_opponents) == 1 and [1 for start, end, troops in attacks_from_here if end == neighbour_opponents[0].id]:
 					stderr.write('Ignore defense: only opponent in '+format_region(start)+' attacked with\n\t'+format_move(start,end,troops)+'\n')
-					break
+					continue
 
 				# predict how many troops are needed to defend this regions
 				# consider casualties to opponents from our planned attacks
-				neighbour_opponent_troops = [max(0,neigh.troop_count - pred_opp_casualties[neigh.id]) for neigh in neighbour_opponents]
-				neighbour_opponent_troop_sum = sum(neighbour_opponent_troops)
+				neighbour_opponent_troops = [max(0,neigh.troop_count - pred_opp_casualties[neigh.id] - 1) for neigh in neighbour_opponents]
+				neighbour_opponent_troop_sum = max(neighbour_opponent_troops)
 				needed_defending_troops = get_defend_armies(neighbour_opponent_troop_sum)
 				allowed_troops_assignment = min(needed_defending_troops, int(round(starting_armies * region_priority/priorities_total)))
 
