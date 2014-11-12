@@ -1,6 +1,6 @@
 from BotLayer import BotLayer
 
-from util import Map, Region, SuperRegion, Random, get_other_player, get_super_region_name, get_region_name
+from util import Map, Region, SuperRegion, Random, get_other_player, get_super_region_name, get_region_name, format_region
 
 from sys import stderr
 
