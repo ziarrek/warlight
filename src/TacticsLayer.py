@@ -14,6 +14,7 @@ class TacticsLayer(BotLayer):
     self.behaviour = "defensive"
     self.owned_regions = 3
     self.def_mult = 2
+    self.att_mult = 6
 
   def pick_starting_regions(self, info, input):
     pass
@@ -133,7 +134,7 @@ class TacticsLayer(BotLayer):
     mult = 1
     # prefer attacking the enemy over netural regions
     if region.owner == self.opponent:
-      mult = 2
+      mult = self.att_mult
 
     return mult * confining
 
