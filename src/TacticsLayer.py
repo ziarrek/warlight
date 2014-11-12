@@ -13,7 +13,7 @@ class TacticsLayer(BotLayer):
     self.round = 1
     self.behaviour = "defensive"
     self.owned_regions = 3
-    self.def_mult = 3
+    self.def_mult = 2
 
   def pick_starting_regions(self, info, input):
     pass
@@ -121,26 +121,25 @@ class TacticsLayer(BotLayer):
 
 
   def attack_value_multiplier(self, region):
+    # limit exposure
     confining = 0
-
     for r in region.neighbours:
       if r.owner == self.our_player:
         confining +=1
 
-    if confining > 0:
-      return confining
-    else:
-      return 1
+    if confining == 0:
+      confining = 1
 
+    mult = 1
+    # prefer attacking the enemy over netural regions
+    if region.owner == self.opponent:
+      mult = 2
 
-
+    return mult * confining
 
   # Give added value to the region defense if the region is on the super_region border
   # and we own more than half the regions in the continent to defend
   def defend_value_multiplier(self, region):
-#    if not region.is_on_super_region_border:
-#      return 0.5
-
     super_region = region.super_region
     owned_regions = float(self.get_number_owned_regions(super_region))
     tot_regions = float(len(super_region.regions))
