@@ -13,6 +13,7 @@ class TacticsLayer(BotLayer):
     self.round = 1
     self.behaviour = "defensive"
     self.owned_regions = 3
+    self.def_mult = 1
 
   def pick_starting_regions(self, info, input):
     pass
@@ -93,8 +94,6 @@ class TacticsLayer(BotLayer):
           stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
 
         elif region.owner == self.opponent:
-          if self.behaviour == "aggressive":
-            priority *= 2 
           inp.append( (region.id, priority, 'attack') )
           stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
 
@@ -134,9 +133,14 @@ class TacticsLayer(BotLayer):
     else:
       return 1
 
+
+
+
+  # Give added value to the region defense if the region is on the super_region border
+  # and we own more than half the regions in the continent to defend
   def defend_value_multiplier(self, region):
-    if not region.is_on_super_region_border:
-      return 0.5
+#    if not region.is_on_super_region_border:
+#      return 0.5
 
     super_region = region.super_region
     owned_regions = float(self.get_number_owned_regions(super_region))
@@ -144,11 +148,14 @@ class TacticsLayer(BotLayer):
     percentage = owned_regions / tot_regions
 
     stderr.write("defend mult: " + get_region_name(region.id) + ": " + str(owned_regions) + "/" + str(tot_regions) + " = " + str(percentage))
-    if percentage > 0.5:
-      stderr.write("applying defend mult")
-      return 2
+#    if percentage > 0.5:
+#      stderr.write("applying defend mult")
+#      return 2
 
-    return 0.5
+    return percentage*self.def_mult
+
+
+
 
   def get_number_owned_regions(self, super_region):
     sum = 0
