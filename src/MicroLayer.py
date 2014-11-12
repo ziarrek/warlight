@@ -69,10 +69,6 @@ class MicroLayer(BotLayer):
 					unfulfilled = more_needed - assignment
 			return (usage, assignment, unfulfilled)
 
-		stderr.write('Prioritized regions:\n')
-		for region_id, region_priority, region_action in regions:
-			stderr.write(format_region(region_id)+': priority '+str(region_priority)+' - '+region_action+'\n')
-
 		for region_id, region_priority, region_action in regions:
 			if not left_armies:
 				break

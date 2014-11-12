@@ -30,7 +30,7 @@ class TacticsLayer(BotLayer):
 #      stderr.write("aggressive\n")
 #    else:
 #      self.behaviour = "defensive"
-#      
+#
 #    self.owned_regions = owned_regions
 
 
@@ -47,7 +47,7 @@ class TacticsLayer(BotLayer):
 #      if self.get_number_owned_regions(continent) == len(continent.regions) or c[1] == 0:
 #        deadlocks += 1
 #
-#    
+#
 #    if deadlocks == len(continents):
 #      conts = []
 #      for c in continents:
@@ -64,12 +64,12 @@ class TacticsLayer(BotLayer):
     # iterate through continents in the list
 
     for continent_tuple in continents:
-      
+
       continent_id = continent_tuple[0]
       value        = continent_tuple[1]
       continent    = self.map.get_super_region_by_id(continent_id)
-      
-      
+
+
       stderr.write(get_super_region_name(continent_id) + ": " + str(value) + "\n")
 
       ### CHECK INVADE #######################
@@ -77,10 +77,10 @@ class TacticsLayer(BotLayer):
         for region in continent.regions:
           if self.invade(region):
             inp.append( ( region.id, 10, 'attack') )
-            stderr.write("Invade " + get_region_name(region.id) + "\n")
+            stderr.write("Invade " + format_region(region.id) + "\n")
         continue                             #
 #      ########################################
-    
+
       for region in continent.regions:
         if region.is_fog:
           continue
@@ -90,20 +90,20 @@ class TacticsLayer(BotLayer):
 
         if region.owner == 'neutral':
           inp.append( (region.id, priority, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) + " " + str(priority) + "\n")
+          stderr.write("\tAttack: " + format_region(region.id) + " " + str(priority) + "\n")
 
         elif region.owner == self.opponent:
           if self.behaviour == "aggressive":
-            priority *= 2 
+            priority *= 2
           inp.append( (region.id, priority, 'attack') )
-          stderr.write("\tAttack: " + get_region_name(region.id) +  " " + str(priority) + "\n")
+          stderr.write("\tAttack: " + format_region(region.id) +  " " + str(priority) + "\n")
 
         else:
           # DEFEND: check border regions
           if self.border(region) and self.in_danger(region):
             priority = value * self.defend_value_multiplier(region)
             inp.append( (region.id, priority, 'defend') )
-            stderr.write("\tDefend: " + get_region_name(region.id) +  " " + str(priority) + "\n")
+            stderr.write("\tDefend: " + format_region(region.id) +  " " + str(priority) + "\n")
 
       stderr.write("\n")
 
@@ -143,7 +143,7 @@ class TacticsLayer(BotLayer):
     tot_regions = float(len(super_region.regions))
     percentage = owned_regions / tot_regions
 
-    stderr.write("defend mult: " + get_region_name(region.id) + ": " + str(owned_regions) + "/" + str(tot_regions) + " = " + str(percentage))
+    stderr.write("defend mult: " + format_region(region.id) + ": " + str(owned_regions) + "/" + str(tot_regions) + " = " + str(percentage))
     if percentage > 0.5:
       stderr.write("applying defend mult")
       return 2
