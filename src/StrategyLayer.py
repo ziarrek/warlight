@@ -242,7 +242,7 @@ class StrategyLayer(BotLayer):
                 super_region_data.value = super_region_data.immediate_threat_rate
                 protection_level += super_region_data.immediate_threat_rate
               super_region_protection_count += 1
-            if super_region_data.value == 0 and super_region_data.immediate_threat_rate > 0
+            if super_region_data.value == 0 and super_region_data.immediate_threat_rate > 0:
               super_region_value == 1
 
         if super_region_protection_count > 0:
