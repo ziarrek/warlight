@@ -119,7 +119,7 @@ class MicroLayer(BotLayer):
 				# bail out if there is only one opponent and we are attacking him
 				attacks_from_here = [move for move in moves if move[0]==region_id]
 				if len(neighbour_opponents) == 1 and [1 for start, end, troops in attacks_from_here if end == neighbour_opponents[0].id]:
-					stderr.write('Ignore defense: only opponent in '+format_region(start)+' attacked with\n\t'+format_move(start,end,troops)+'\n')
+					stderr.write('Ignore defense: only opponent in '+format_region(end)+' attacked with\n\t'+format_move(start,end,troops)+'\n')
 					continue
 
 				# predict how many troops are needed to defend this regions
