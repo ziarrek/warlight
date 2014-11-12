@@ -77,8 +77,9 @@ class TacticsLayer(BotLayer):
         for region in continent.regions:
           if self.invade(region):
             inp.append( ( region.id, 10, 'attack') )
+            stderr.write("Invade " + get_region_name(region.id) + "\n")
         continue                             #
-      ########################################
+#      ########################################
     
       for region in continent.regions:
         if region.is_fog:
@@ -135,7 +136,7 @@ class TacticsLayer(BotLayer):
 
   def defend_value_multiplier(self, region):
     if not region.is_on_super_region_border:
-      return 1
+      return 0.5
 
     super_region = region.super_region
     owned_regions = float(self.get_number_owned_regions(super_region))
@@ -147,7 +148,7 @@ class TacticsLayer(BotLayer):
       stderr.write("applying defend mult")
       return 2
 
-    return 1
+    return 0.5
 
   def get_number_owned_regions(self, super_region):
     sum = 0
