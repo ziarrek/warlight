@@ -177,14 +177,14 @@ class StrategyLayer(BotLayer):
       # PHASE Initial
       if self.initial_phase:
         focus_super_region = self.super_region_data_list[0]
-        current_best_occupaction = 0
+        current_best_occupaction = focus_super_region.total_regions - focus_super_region.owned_regions
         for super_region_data in self.super_region_data_list:
-          if current_best_occupaction < super_region_data.owned_regions / super_region_data.total_regions:
-            #stderr.write()
+          #stderr.write(str(super_region_data.total_regions - super_region_data.owned_regions) + ' ')
+          if current_best_occupaction > super_region_data.total_regions - super_region_data.owned_regions:
             focus_super_region = super_region_data
-            current_best_occupaction = super_region_data.owned_regions
-          if current_best_occupaction == super_region_data.owned_regions / super_region_data.total_regions:
-            if focus_super_region.owned_troops < super_region_data.owned_troops:
+            current_best_occupaction = super_region_data.total_regions - super_region_data.owned_regions
+          elif current_best_occupaction == super_region_data.total_regions - super_region_data.owned_regions:
+            if focus_super_region.owned_troops / (focus_super_region.owned_regions+1)  < super_region_data.owned_troops / (super_region_data.owned_regions+1):
               focus_super_region = super_region_data
             else:
               if self.super_region_importance[int(float(focus_super_region.id))-1] < self.super_region_importance[int(float(super_region_data.id))-1]:
@@ -210,7 +210,9 @@ class StrategyLayer(BotLayer):
                 focus_super_region = super_region_data
               elif focus_super_region.phase ==  3:
                 # Check which super region has most troops
-                if focus_super_region.owned_troops < super_region_data.owned_troops:
+                if focus_super_region.total_regions - focus_super_region.owned_regions > super_region_data.total_regions - super_region_data.owned_regions:
+                  focus_super_region = super_region_data
+                elif focus_super_region.owned_troops / (focus_super_region.owned_regions+1) < super_region_data.owned_troops / (super_region_data.owned_regions+1):
                   focus_super_region = super_region_data 
                 # Check if the value of super region is generally more interesting than the current focus
                 elif focus_super_region.owned_troops == super_region_data.owned_troops:
