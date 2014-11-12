@@ -91,21 +91,33 @@ class MicroLayer(BotLayer):
 					unused = candidate_unused_troops[chosen.id]
 					usage, assignment, needed_more = get_army_split(unused,allowed_more,needed_more)
 
-					used_troops[chosen.id] += usage
 					placements_dict[chosen.id] += assignment
+					chosen.troop_count += assignment
+					used_troops[chosen.id] += usage + assignment
 					allowed_more -= assignment
 					left_armies -= assignment
 					proposed_moves.append( (chosen.id, region.id, usage+assignment) )
 					self.regions_of_interest[chosen.id] = max(self.regions_of_interest[chosen.id], region_priority)
 
 				# if all attacks summed have the chance of killing more than half of the opponent's forces, attack
+
 				if needed_more <= needed_attacking_troops * 0.5:
 					moves += proposed_moves
 					troops_used = needed_attacking_troops - needed_more
 					pred_opp_casualties[region.id] += get_attack_casualties(troops_used)
+				else:
+					for start_id, end_id, troops in proposed_moves:
+						used_troops[start_id] -= troops
 
 			elif region_action == 'defend':
 				neighbour_opponents = [neigh for neigh in region.neighbours if not neigh.is_fog and neigh.owner == opponent]
+
+				# bail out if there is only one opponent and we are attacking him
+				attacks_from_here = [move for move in moves if move[0]==region_id]
+				if len(neighbour_opponents) == 1 and [1 for start, end, troops in attacks_from_here if end == neighbour_opponents[0].id]:
+					stderr.write('Ignore defense: only opponent in '+format_region(start)+' attacked with\n\t'+format_move(start,end,troops)+'\n')
+					break
+
 				# predict how many troops are needed to defend this regions
 				# consider casualties to opponents from our planned attacks
 				neighbour_opponent_troops = [max(0,neigh.troop_count - pred_opp_casualties[neigh.id]) for neigh in neighbour_opponents]
@@ -115,11 +127,11 @@ class MicroLayer(BotLayer):
 
 				unused = region.troop_count - used_troops[region_id]
 				usage, assignment, needed_more = get_army_split(unused, allowed_troops_assignment, needed_defending_troops)
-				used_troops[region_id] += usage
 				placements_dict[region_id] += assignment
+				region.troop_count += assignment
+				used_troops[region_id] += usage+assignment
 				left_armies -= assignment
 
-				self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
 
 		if left_armies>0 and moves:
 			# redistribute unused armies to attack moves
@@ -131,6 +143,7 @@ class MicroLayer(BotLayer):
 				moves[i] = (move[0], move[1], move[2] + amount)
 				placements_dict[move[0]] += amount
 				left_armies -= amount
+				stderr.write('Redistribute left_armies: add '+str(amount)+' to '+format_move(*move)+'\n')
 		if left_armies>0 and placements_dict:
 			# redistribute unused armies to placements
 			redistribution = int(math.ceil(left_armies *1.0/len(placements_dict)))
@@ -140,11 +153,14 @@ class MicroLayer(BotLayer):
 				amount = min(redistribution, left_armies)
 				placements_dict[placement_region_id] += amount
 				left_armies -= amount
+				stderr.write('Redistribute left_armies: add '+str(amount)+' to '+format_regin(placement_region_id)+'\n')
 
-		pp.pprint(self.regions_of_interest)
-
+		# second iteration over regions: distribute unused and add regions_of_interest for defense
 		# distribute unused troops from frontal regions to attack moves
 		for region_id, region_priority, region_action in regions:
+			if region_action == 'defend':
+				self.regions_of_interest[region_id] = max(self.regions_of_interest[region_id], region_priority)
+
 			region = world.get_region_by_id(region_id)
 			unused = region.troop_count - used_troops[region_id]
 			if region_id in self.regions_of_interest and unused>0:
@@ -154,7 +170,7 @@ class MicroLayer(BotLayer):
 					i, best_move = local_moves[0]
 					from_reg, to_reg, troops = best_move
 					moves[i] = (from_reg,to_reg,troops+unused)
-					stderr.write('Redistribute unused: add '+str(unused)+' to '+format_move(*best_move))
+					stderr.write('Redistribute unused: add '+str(unused)+' to '+format_move(*best_move)+'\n')
 					used_troops[region_id] += unused
 
 		placements = [(reg_id, troop_count) for reg_id, troop_count in placements_dict.iteritems() if troop_count > 0]
@@ -175,9 +191,9 @@ class MicroLayer(BotLayer):
 		alg_iter = 10 # acts as infinity - initial value of interest regions
 		interest_regions = self.regions_of_interest
 
-		stderr.write('Regions of interest:\n')
+		stderr.write('\nRegions of interest:\n')
 		for reg_id in interest_regions:
-			stderr.write(format_region(reg_id)+'\n')
+			stderr.write('\t'+format_region(reg_id)+'\n')
 		# pp.pprint(interest_regions)
 
 		initial_idle_moves = []
