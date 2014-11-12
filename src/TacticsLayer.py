@@ -13,6 +13,7 @@ class TacticsLayer(BotLayer):
     self.round = 1
     self.behaviour = "defensive"
     self.owned_regions = 3
+    self.def_mult = 3
 
   def pick_starting_regions(self, info, input):
     pass
@@ -21,17 +22,6 @@ class TacticsLayer(BotLayer):
     self.map = info['world']
     self.our_player = info['your_bot']
     self.opponent = get_other_player(self.our_player)
-
-    # REINFORCEMENT LEARNING
-#    owned_regions = self.get_owned_regions()
-   # stderr.write("reinf " + str(owned_regions) + " " + str(self.owned_regions) + "\n")
-#    if owned_regions < self.owned_regions:
-#      self.behaviour = "aggressive"
-#      stderr.write("aggressive\n")
-#    else:
-#      self.behaviour = "defensive"
-#
-#    self.owned_regions = owned_regions
 
 
 
@@ -93,16 +83,22 @@ class TacticsLayer(BotLayer):
           stderr.write("\tAttack: " + format_region(region.id) + " " + str(priority) + "\n")
 
         elif region.owner == self.opponent:
-          if self.behaviour == "aggressive":
-            priority *= 2
+#          def_troops = region.troop_count
+#          att_troops = self.get_max_attacking_troops(region)
+#          if att_troops > def_troops:
+#            priority *= 2
+#            stderr.write("attmult: ")
           inp.append( (region.id, priority, 'attack') )
           stderr.write("\tAttack: " + format_region(region.id) +  " " + str(priority) + "\n")
 
         else:
           # DEFEND: check border regions
-          if self.border(region) and self.in_danger(region):
-            priority = value * self.defend_value_multiplier(region)
-            inp.append( (region.id, priority, 'defend') )
+          if self.border(region):
+            if self.in_danger(region):
+              priority = value * self.defend_value_multiplier(region)
+              inp.append( (region.id, priority, 'defend') )
+            else:
+              inp.append( (region.id, 0, 'defend') )
             stderr.write("\tDefend: " + format_region(region.id) +  " " + str(priority) + "\n")
 
       stderr.write("\n")
@@ -122,6 +118,8 @@ class TacticsLayer(BotLayer):
 
     return False
 
+
+
   def attack_value_multiplier(self, region):
     confining = 0
 
@@ -134,21 +132,27 @@ class TacticsLayer(BotLayer):
     else:
       return 1
 
+
+
+
+  # Give added value to the region defense if the region is on the super_region border
+  # and we own more than half the regions in the continent to defend
   def defend_value_multiplier(self, region):
-    if not region.is_on_super_region_border:
-      return 0.5
+#    if not region.is_on_super_region_border:
+#      return 0.5
 
     super_region = region.super_region
     owned_regions = float(self.get_number_owned_regions(super_region))
     tot_regions = float(len(super_region.regions))
     percentage = owned_regions / tot_regions
 
-    stderr.write("defend mult: " + format_region(region.id) + ": " + str(owned_regions) + "/" + str(tot_regions) + " = " + str(percentage))
-    if percentage > 0.5:
-      stderr.write("applying defend mult")
-      return 2
+    stderr.write("defend mult: " + get_region_name(region.id) + ": " + str(owned_regions) + "/" + str(tot_regions) + " = " + str(percentage))
+#    if percentage > 0.5:
+#      stderr.write("applying defend mult")
+#      return 2
 
-    return 0.5
+    return percentage*self.def_mult
+
 
   def get_number_owned_regions(self, super_region):
     sum = 0
@@ -198,4 +202,21 @@ class TacticsLayer(BotLayer):
     return True
 
 
+  def get_max_attacking_troops(self, region):
+    troops = 0
+    for r in region.neighbours:
+      if not r.is_fog and r.owner == self.our_player:
+        troops += (r.troop_count - 1)
+    return troops
+
+    # REINFORCEMENT LEARNING
+#    owned_regions = self.get_owned_regions()
+   # stderr.write("reinf " + str(owned_regions) + " " + str(self.owned_regions) + "\n")
+#    if owned_regions < self.owned_regions:
+#      self.behaviour = "aggressive"
+#      stderr.write("aggressive\n")
+#    else:
+#      self.behaviour = "defensive"
+#
+#    self.owned_regions = owned_regions
 
