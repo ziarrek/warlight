@@ -52,6 +52,18 @@ def get_region_name(id):
   elif id == '41': return 'Western Australia'
   elif id == '42': return 'Eastern Australia'
 
+def format_region(id):
+  return get_region_name(id)+'('+str(id)+')'
+
+def format_super_region(id):
+  return get_super_region_name(id)+'('+str(id)+')'
+
+def format_move(source, target, troop_count):
+  return 'Move '+str(troop_count)+' troops from '+format_region(source)+' to '+format_region(target)
+
+def format_placement(region_id, troop_count):
+  return 'Place '+str(troop_count)+' troops on '+format_region(region_id)
+
 def get_other_player(player_name):
     return 'player2' if player_name == 'player1' else 'player1'
 
@@ -105,7 +117,7 @@ class Region(object):
         '''
         '''
         self.id = region_id
-        self.owner = 'neutral'
+        self.owner = 'fog'
         self.neighbours = []
         self.troop_count = 2
         self.super_region = super_region
