@@ -13,8 +13,9 @@ class TacticsLayer(BotLayer):
     self.round = 1
     self.behaviour = "defensive"
     self.owned_regions = 3
-    self.def_mult = 2
-    self.att_mult = 6
+    self.def_mult = 3
+    self.att_mult = 5
+    self.threshold = 0.4
 
   def pick_starting_regions(self, info, input):
     pass
@@ -54,24 +55,37 @@ class TacticsLayer(BotLayer):
     self.round += 1
     # iterate through continents in the list
 
+    new_continent_attack = False
+
     for continent_tuple in continents:
 
       continent_id = continent_tuple[0]
       value        = continent_tuple[1]
       continent    = self.map.get_super_region_by_id(continent_id)
 
-
-      stderr.write(get_super_region_name(continent_id) + ": " + str(value) + "\n")
-
-      ### CHECK INVADE #######################
+     ### CHECK INVADE #######################
       if value == 0:                         #
         for region in continent.regions:
           if self.invade(region):
             inp.append( ( region.id, 10, 'attack') )
             stderr.write("Invade " + format_region(region.id) + "\n")
-        continue                             #
-#      ########################################
+       
 
+      threshold = float(self.get_number_owned_regions(continent)) / float(len(continent.regions))
+      stderr.write(get_super_region_name(continent_id) + ": " + str(value) + " - " + str(threshold) + "\n")
+      ## Do not attack two NEWish continents in the same round
+      if self.get_number_owned_regions(continent) == 0:
+        if new_continent_attack:
+          stderr.write("Skipping\n");
+          continue
+        else:
+          stderr.write("Setting new continent attack to false\n")
+          new_continent_attack = True
+      ## set continent as new if just started to attack it
+      if threshold < self.threshold:
+        stderr.write("Setting new continent attack to false\n")
+        new_continent_attack = True
+      
       for region in continent.regions:
         if region.is_fog:
           continue
@@ -208,15 +222,4 @@ class TacticsLayer(BotLayer):
       if not r.is_fog and r.owner == self.our_player:
         troops += (r.troop_count - 1)
     return troops
-
-    # REINFORCEMENT LEARNING
-#    owned_regions = self.get_owned_regions()
-   # stderr.write("reinf " + str(owned_regions) + " " + str(self.owned_regions) + "\n")
-#    if owned_regions < self.owned_regions:
-#      self.behaviour = "aggressive"
-#      stderr.write("aggressive\n")
-#    else:
-#      self.behaviour = "defensive"
-#
-#    self.owned_regions = owned_regions
 
